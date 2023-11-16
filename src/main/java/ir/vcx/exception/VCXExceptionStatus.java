@@ -13,6 +13,8 @@ public enum VCXExceptionStatus {
     REQUEST_REJECTED(400, "Request Rejected", "درخواست شامل کاراکتر های مخرب است."),
     SSO_INVALID_REQUEST(400, "SSO Invalid Code Request", "کد تایید اشتباه می باشد و یا زمان استفاده از آن به اتمام رسیده است."),
 
+    UNAUTHORIZED(401, "Unauthorized", "درخواست دسترسی معتبر نیست."),
+
     NOT_FOUND(404, "Request Not found", "درخواست مورد نظر پیدا نشد."),
 
     SSO_CONNECTION_ERROR(500, "SSO Server Connection Error", "ارتباط با سرور SSO با مشکل مواجه شده است."),
