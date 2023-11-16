@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.vcx.api.model.DeviceType;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.api.model.mapper.HandshakeMapper;
-import ir.vcx.domain.model.sso.otp.AccessToken;
+import ir.vcx.domain.model.sso.AccessToken;
 import ir.vcx.domain.model.sso.otp.Authorize;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.Oauth2Service;

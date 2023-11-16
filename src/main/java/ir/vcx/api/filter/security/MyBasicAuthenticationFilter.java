@@ -60,7 +60,7 @@ public class MyBasicAuthenticationFilter extends BasicAuthenticationFilter {
 
         if (StringUtils.isBlank(accessToken)) {
 
-            accessToken = request.getParameter(AUTHORIZATION.toLowerCase()).toLowerCase();
+            accessToken = request.getParameter(AUTHORIZATION);
 
             if (StringUtils.isNotBlank(accessToken)) {
                 accessToken = accessToken.startsWith(SECURITY_AUTHORIZATION_SCHEMA)
