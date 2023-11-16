@@ -79,7 +79,7 @@ public class HeaderDecoratorAdvice implements ResponseBodyAdvice<Object> {
         headers.set("Reference-Id", referenceId);
 
         headers.set("Server", server);
-        headers.set("X-Powered-By", "FanapSoft/PodPlatform (" + server + ")");
+        headers.set("X-Powered-By", "VCX Platform (" + server + ")");
 
         return body;
     }
