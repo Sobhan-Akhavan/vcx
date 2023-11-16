@@ -1,6 +1,9 @@
 package ir.vcx.api.filter.security;
 
+import ir.vcx.util.KeyleadConfiguration;
+import ir.vcx.util.ResponseWriterUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +22,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, order = Integer.MIN_VALUE + 1000)
 public class WebSecurity extends WebSecurityConfigurerAdapter {
+
+    private final KeyleadConfiguration keyleadConfiguration;
+    private final ResponseWriterUtil responseWriterUtil;
+
+    @Autowired
+    public WebSecurity(KeyleadConfiguration keyleadConfiguration, ResponseWriterUtil responseWriterUtil) {
+        this.keyleadConfiguration = keyleadConfiguration;
+        this.responseWriterUtil = responseWriterUtil;
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors()
@@ -41,6 +54,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 ).permitAll()
                 .antMatchers("/**").permitAll()
                 .and()
+                .addFilter(new MyBasicAuthenticationFilter(authenticationManager(), keyleadConfiguration, responseWriterUtil))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 

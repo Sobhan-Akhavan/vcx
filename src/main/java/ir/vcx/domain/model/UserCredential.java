@@ -14,6 +14,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserCredential implements VCXDomainModel {
     private String token;
-    private String refreshToken;
     private VCXUser user;
 }

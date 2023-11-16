@@ -18,6 +18,12 @@
         <lombok.version>1.18.28</lombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
     </properties>
+    <repositories>
+        <repository>
+            <id>artifactory</id>
+            <url>http://172.16.110.61:9001/artifactory/maven</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -79,6 +85,25 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fanapium.keylead</groupId>
+            <artifactId>keylead-client</artifactId>
+            <version>1.20.12.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.logstash.log4j</groupId>
+                    <artifactId>jsonevent-layout</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

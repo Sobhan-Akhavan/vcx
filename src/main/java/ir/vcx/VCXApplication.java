@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Created by Sobhan at 8/10/2023 - VCX
  */
 
+//TODO - remove local repo and rewrite the sdk
+
 @SpringBootApplication
 public class VCXApplication {
 

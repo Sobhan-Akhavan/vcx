@@ -16,11 +16,16 @@ public enum VCXExceptionStatus {
     UNAUTHORIZED(401, "Unauthorized", "درخواست دسترسی معتبر نیست."),
 
     NOT_FOUND(404, "Request Not found", "درخواست مورد نظر پیدا نشد."),
+    INVALID_AUTHORIZATION_TYPE(401, "Invalid authorization type", "احراز هویت باید از نوع Bearer باشد"),
 
     SSO_CONNECTION_ERROR(500, "SSO Server Connection Error", "ارتباط با سرور SSO با مشکل مواجه شده است."),
 
-    PROCESS_REQUEST_ERROR(500, "Process Request Error", "این امکان در حال حاضر وجود ندارد."),
-    UNKNOWN_ERROR(500, "Unknown Error", "خطایی رخ داده است!");
+    PROCESS_REQUEST_ERROR(500, "Process request error", "این امکان در حال حاضر وجود ندارد."),
+    UNKNOWN_ERROR(500, "Unknown error", "خطایی رخ داده است!"),
+
+    BAD_GATEWAY(502, "Bad Gateway", "عدم توانایی برقراری ارتباط."),
+
+    ;
 
     private final int code;
     private final String reasonPhrase;

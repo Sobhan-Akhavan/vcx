@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.data.entity.VCXUser;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Me")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/me")
+@SecurityRequirement(name = "Bearer")
 @RestController
 public class AboutMeController {
 
@@ -63,6 +65,7 @@ public class AboutMeController {
         }
 
         return ResponseEntity.ok(RestResponse.Builder()
+                .result(vcxUser)
                 .status(HttpStatus.OK)
                 .build()
         );
