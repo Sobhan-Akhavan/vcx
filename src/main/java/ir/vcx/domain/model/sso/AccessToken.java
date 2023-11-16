@@ -1,4 +1,4 @@
-package ir.vcx.domain.model.sso.otp;
+package ir.vcx.domain.model.sso;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
