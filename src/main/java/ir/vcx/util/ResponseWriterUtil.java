@@ -44,10 +44,10 @@ public class ResponseWriterUtil {
         RestResponse<?> restResponse = new RestResponse<>(
                 e.getStatus().getCode(),
                 e.getStatus().getReasonPhrase(),
-                (String) request.getAttribute("userUri"),
                 e.getMessage(),
-                (String) request.getAttribute("referenceId"),
-                new Date(Long.parseLong((String) Objects.requireNonNull(request.getAttribute("startDate"))))
+                String.valueOf(request.getAttribute("userUri")),
+                new Date(Long.parseLong((String) Objects.requireNonNull(request.getAttribute("startDate")))),
+                String.valueOf(request.getAttribute("referenceId"))
         );
 
         sendResponse(response, request, status, restResponse);
@@ -61,10 +61,10 @@ public class ResponseWriterUtil {
         RestResponse<?> restResponse = new RestResponse<>(
                 401,
                 e.getStatus().getReasonPhrase(),
-                (String) request.getAttribute("userUri"),
                 e.getMessage(),
-                (String) request.getAttribute("referenceId"),
-                new Date(Long.parseLong((String) Objects.requireNonNull(request.getAttribute("startDate"))))
+                String.valueOf(request.getAttribute("userUri")),
+                new Date(Long.parseLong((String) Objects.requireNonNull(request.getAttribute("startDate")))),
+                String.valueOf(request.getAttribute("referenceId"))
         );
 
         sendResponse(response, request, status, restResponse);

@@ -15,14 +15,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
-import static org.springframework.http.HttpStatus.resolve;
 
 /**
  * Created by Sobhan at 8/10/2023 - VCX
@@ -31,8 +29,8 @@ import static org.springframework.http.HttpStatus.resolve;
 @Slf4j
 @ControllerAdvice
 public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler({VCXException.class})
-    public ResponseEntity<?> ArchiveExceptionHandler(HttpServletRequest request, VCXException exception) {
+    @ExceptionHandler(VCXException.class)
+    public ResponseEntity<?> handleVCXException(HttpServletRequest request, VCXException exception) {
 
         VCXExceptionStatus status = exception.getStatus();
         return ResponseEntity
@@ -41,49 +39,22 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
                 .body(new RestResponse<>(
                         status.getCode(),
                         status.getReasonPhrase(),
-                        (String) request.getAttribute("userUri"),
-                        (String) request.getAttribute("referenceId"),
-                        exception.getMessage(),
-                        new Date(Long.parseLong((String) request.getAttribute("startDate")))
+                        status.getMessage(),
+                        String.valueOf(request.getAttribute("userUri")),
+                        new Date(Long.parseLong(String.valueOf(request.getAttribute("startDate")))),
+                        String.valueOf(request.getAttribute("referenceId"))
                 ));
     }
 
-    @ExceptionHandler(ConversionFailedException.class)
-    public ResponseEntity<?> handleConversionFailedException(RuntimeException ex, HttpServletRequest request) {
-        return ArchiveExceptionHandler(request, new VCXException(VCXExceptionStatus.INVALID_REQUEST));
-    }
-
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<?> handleMethodArgumentTypeMismatchException(RuntimeException ex, HttpServletRequest request) {
-        return ArchiveExceptionHandler(request, new VCXException(VCXExceptionStatus.INVALID_REQUEST));
-    }
-
-    @ExceptionHandler({MultipartException.class})
-    public ResponseEntity<?> multipartExceptionHandler(HttpServletRequest request, MultipartException exception) {
-
-        return ResponseEntity
-                .status(400)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new RestResponse(
-                        400,
-                        "Error Parsing File",
-                        (String) request.getAttribute("userUri"),
-                        exception.getMessage(),
-                        (String) request.getAttribute("referenceId"),
-                        new Date(Long.parseLong((String) request.getAttribute("startDate")))
-                ));
-
-    }
-
-
-    @ExceptionHandler({RuntimeException.class})
-    public ResponseEntity<?> runtimeExceptionHandler(HttpServletRequest request, RuntimeException exception) {
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleRuntimeException(HttpServletRequest request, RuntimeException exception) {
 
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        String userUri = (String) request.getAttribute("userUri");
-        String referenceId = (String) request.getAttribute("referenceId");
+        String message = "مشکلی در پردازش به ‌وجود آمده است";
+        String userUri = String.valueOf(request.getAttribute("userUri"));
+        String referenceId = String.valueOf(request.getAttribute("referenceId"));
 
-        log.error("5xx exception with uri: " + userUri + " ,ref: " + referenceId, exception);
+        log.error("500 exception with referenceId: {} and uri: {}", referenceId, userUri, exception);
 
         return ResponseEntity
                 .status(status)
@@ -91,17 +62,38 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
                 .body(new RestResponse<>(
                         status.value(),
                         status.getReasonPhrase(),
+                        message,
                         userUri,
-                        "مشکلی در پردازش به وجود آمده است.",
-                        referenceId,
-                        new Date(Long.parseLong((String) request.getAttribute("startDate")))
+                        new Date(Long.parseLong(String.valueOf(request.getAttribute("startDate")))),
+                        referenceId
+                ));
+    }
+
+    @ExceptionHandler({ConversionFailedException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<?> handleMethodCastFailedException(HttpServletRequest request, RuntimeException exception) {
+        return handleCustomException(request, exception);
+    }
+
+    private ResponseEntity<?> handleCustomException(HttpServletRequest request, RuntimeException exception) {
+
+        int code = VCXExceptionStatus.INVALID_REQUEST.getCode();
+        return ResponseEntity
+                .status(code)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new RestResponse<>(
+                        code,
+                        VCXExceptionStatus.INVALID_REQUEST.getReasonPhrase(),
+                        exception.getMessage(),
+                        String.valueOf(request.getAttribute("userUri")),
+                        new Date(Long.parseLong(String.valueOf(request.getAttribute("startDate")))),
+                        String.valueOf(request.getAttribute("referenceId"))
                 ));
     }
 
     @RestController
     public static class ErrorHandlerController implements ErrorController {
-        @RequestMapping(value = "/error", produces = MediaType.APPLICATION_JSON_VALUE)
         @Operation(hidden = true)
+        @RequestMapping(value = "/error", produces = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<?> err(HttpServletRequest request, HttpServletResponse response) {
 
             int code;
@@ -109,11 +101,10 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
             VCXExceptionStatus status;
 
             if (request.getAttribute("exceptionStatus") == null) {
-                HttpStatus httpStatus = resolve(response.getStatus());
+                HttpStatus httpStatus = HttpStatus.resolve(response.getStatus());
                 code = httpStatus.value();
                 message = httpStatus.getReasonPhrase();
                 reasonPhrase = httpStatus.getReasonPhrase();
-                status = null;
             } else {
                 status = (VCXExceptionStatus) request.getAttribute("exceptionStatus");
                 code = status.getCode();
@@ -122,12 +113,11 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
             }
 
             return ResponseEntity.status(code)
-                    .body(new RestResponse(
-                                    code,
-                                    reasonPhrase,
-                                    message
-                            )
-                    );
+                    .body(new RestResponse<>(
+                            code,
+                            reasonPhrase,
+                            message
+                    ));
         }
     }
 }

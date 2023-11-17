@@ -34,17 +34,16 @@ public class RestResponse<T> implements VCXApiMode {
         this.timestamp = timestamp;
     }
 
-    public RestResponse(int status, String error, String path, String reference, String message, Date timestamp) {
+    public RestResponse(int status, String error, String message, String path, Date timestamp, String reference) {
         this.status = status;
         this.error = error;
-        this.path = path;
-        this.result = null;
-        this.reference = reference;
         this.message = message;
+        this.path = path;
         this.timestamp = timestamp;
+        this.reference = reference;
     }
 
-    public RestResponse(Integer status, String error, String message) {
+    public RestResponse(int status, String error, String message) {
         this.status = status;
         this.error = error;
         this.message = message;
