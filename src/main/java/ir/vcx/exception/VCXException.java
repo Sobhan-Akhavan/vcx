@@ -9,8 +9,13 @@ import lombok.Getter;
 @Getter
 public class VCXException extends Exception {
 
-    protected VCXExceptionStatus status;
-    protected String message;
+    private VCXExceptionStatus status;
+
+    private int code;
+    private String reasonPhrase;
+    private String message;
+
+
 
     public VCXException(VCXExceptionStatus status) {
         this.status = status;
@@ -18,6 +23,12 @@ public class VCXException extends Exception {
 
     public VCXException(VCXExceptionStatus status, String message) {
         this.status = status;
+        this.message = message;
+    }
+
+    public VCXException(int code, String reasonPhrase, String message) {
+        this.code = code;
+        this.reasonPhrase = reasonPhrase;
         this.message = message;
     }
 }

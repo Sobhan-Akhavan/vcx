@@ -15,6 +15,8 @@ public enum VCXExceptionStatus {
     INVALID_REDIRECT_URI(400, "Invalid Redirect Uri", "درخواست معتبر نمی‌باشد"),
     INVALID_SSO_TYPE(400, "Invalid SSO Type", "درخواست معتبر نمی‌باشد"),
 
+    INVALID_NAME_VALUE(400, "Invalid name value", "نام وارد شده معتبر نمی‌باشد."),
+
 
     UNAUTHORIZED(401, "Unauthorized", "درخواست دسترسی معتبر نیست"),
     INVALID_AUTHORIZATION_TYPE(401, "Invalid authorization type", "احراز هویت باید از نوع Bearer باشد"),
@@ -25,6 +27,7 @@ public enum VCXExceptionStatus {
     SSO_CONNECTION_ERROR(500, "SSO Server Connection Error", "ارتباط با سرور SSO با مشکل مواجه شده است"),
 
     PROCESS_REQUEST_ERROR(500, "Process request error", "این امکان در حال حاضر وجود ندارد"),
+    PODSPACE_REQUEST_CALL_ERROR(500, "PodSpace Request Call Error", "در ارتباط با پاداسپیس مشکلی به وجود آمده است."),
     UNKNOWN_ERROR(500, "Unknown error", "خطایی رخ داده است"),
 
     BAD_GATEWAY(502, "Bad Gateway", "عدم توانایی برقراری ارتباط"),
