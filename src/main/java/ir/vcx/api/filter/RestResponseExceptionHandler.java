@@ -32,14 +32,31 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler(VCXException.class)
     public ResponseEntity<?> handleVCXException(HttpServletRequest request, VCXException exception) {
 
+        int code;
+        String reasonPhrase, message;
+
         VCXExceptionStatus status = exception.getStatus();
+        if (status != null && exception.getMessage() != null) {
+            code = status.getCode();
+            reasonPhrase = status.getReasonPhrase();
+            message = exception.getMessage();
+        } else if (status != null) {
+            code = status.getCode();
+            reasonPhrase = status.getReasonPhrase();
+            message = status.getMessage();
+        } else {
+            code = exception.getCode();
+            reasonPhrase = exception.getReasonPhrase();
+            message = exception.getMessage();
+        }
+
         return ResponseEntity
-                .status(status.getCode())
+                .status(code)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new RestResponse<>(
-                        status.getCode(),
-                        status.getReasonPhrase(),
-                        status.getMessage(),
+                        code,
+                        reasonPhrase,
+                        message,
                         String.valueOf(request.getAttribute("userUri")),
                         new Date(Long.parseLong(String.valueOf(request.getAttribute("startDate")))),
                         String.valueOf(request.getAttribute("referenceId"))
