@@ -1,5 +1,7 @@
 package ir.vcx.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +21,30 @@ public class DateUtil {
         return getNowCalendar().getTime();
     }
 
+    public static Date futureTime(TimeInFuture timeInFuture) {
+        Calendar nowCalendar = getNowCalendar();
+        nowCalendar.add(Calendar.DAY_OF_MONTH, timeInFuture.time);
+        return nowCalendar.getTime();
+    }
+
+    public static Date epochToDate(long epoch) {
+        return new Date(epoch);
+    }
+
     private static Calendar getNowCalendar() {
         return Calendar.getInstance(TimeZone.getTimeZone("Asia/Tehran"));
+    }
+
+
+    @Getter
+    @AllArgsConstructor
+    public enum TimeInFuture {
+
+        OneDay(1),
+        OneWeek(7);
+
+
+        private final int time;
     }
 
 }

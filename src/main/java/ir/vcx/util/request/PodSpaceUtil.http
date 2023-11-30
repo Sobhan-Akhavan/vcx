@@ -1,0 +1,31 @@
+### Create Folder
+POST http://192.168.112.182:8080/api/folders?name=slm&parentHash=ROOT&uniqueName=true
+accept: application/json
+Authorization: Bearer a49f40812f8f478899fbdba73cfa47d8.XzIwMjM4
+Content-Type: application/x-www-form-urlencoded
+
+### Get Upload Link
+GET http://192.168.112.182:8080/api/files/link?size=0&destination=ROOT&expiration=2000000000000&isPublic=false&
+    postProcess=true
+accept: application/json
+Authorization: Bearer a4b11d7e3456452ebe7d20a126d47f5c.XzIwMjMxMQ
+
+
+###
+
+### Wipe Entity
+DELETE http://127.0.0.1:8081/api/trashes/F35YQJMFISG6HTPQ?force=true
+accept: application/json
+Authorization: Bearer 8f7d92ad0c9c4b3b99f1bd788c5a76cd
+
+###
+
+### Create UserGroup
+POST http://192.168.112.182:8080/api/usergroups?ssoId=79898&destFolderHash=ROOT&allowMemberShare=false&
+    cachePolicy=CACHE_WITH_REVALIDATE
+accept: application/json
+Authorization: Bearer 32eca85c3baa48be85ba347d45ae8f27.XzIwMjM4
+Content-Type: application/x-www-form-urlencoded
+
+###
+

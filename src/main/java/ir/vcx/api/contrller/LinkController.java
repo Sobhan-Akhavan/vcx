@@ -9,8 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.vcx.api.model.RestResponse;
-import ir.vcx.data.entity.GenreType;
-import ir.vcx.data.entity.VideoType;
+import ir.vcx.data.entity.VCXLink;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.LinkService;
 import ir.vcx.exception.VCXException;
@@ -53,19 +52,20 @@ public class LinkController {
                             schema = @Schema(implementation = RestResponse.class))}),
     })
     @GetMapping("/upload")
-    public ResponseEntity<?> uploadLink(
-            @RequestParam(name = "videType")
-            @Parameter(description = "type of video", required = true)
-            VideoType videoType,
-            @RequestParam(name = "genreType")
-            @Parameter(description = "type of genre", required = true)
-            GenreType genreType
+    public ResponseEntity<?> getUploadLink(
+            @RequestParam(name = "name")
+            @Parameter(description = "name of folder(destination folder for upload file)", required = true)
+            String name,
+            @RequestParam(name = "season", required = false)
+            @Parameter(description = "season of series")
+            Integer season
     ) throws VCXException {
 
-        linkService.getUploadLink(videoType, genreType);
+        VCXLink uploadLink = linkService.getUploadLink(name, season);
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
+                .result(uploadLink)
                 .build()
         );
     }

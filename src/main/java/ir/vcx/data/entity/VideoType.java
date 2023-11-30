@@ -5,6 +5,6 @@ package ir.vcx.data.entity;
  */
 
 public enum VideoType {
-    MOVIE,
+    MOVIES,
     SERIES
 }
