@@ -29,7 +29,7 @@ import java.util.Set;
 
 @Tag(name = "Content Management")
 @CrossOrigin("*")
-@RequestMapping("/api/v1/content")
+@RequestMapping("/api/v1/contents")
 @SecurityRequirement(name = "Bearer")
 @RestController
 public class ContentController {
