@@ -38,20 +38,23 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent createContent(String name, String hash, String parentHash, String description, VideoType videoType,
+    public VCXContent createContent(String file_url, String description, VideoType videoType,
                                     Set<GenreType> genreTypes) throws VCXException {
 
-        VCXFolder vcxFolder = folderRepository.getFolder(parentHash)
+        EntityDetail fileInfo = podSpaceUtil.uploaded_file_info(file_url)
+                .getResult();
+
+        VCXFolder vcxFolder = folderRepository.getFolder(fileInfo.getParentHash())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.NOT_FOUND));
 
-        EntityDetail entityDetail = podSpaceUtil.getEntityDetail(hash).getResult();
+        EntityDetail entityDetail = podSpaceUtil.getEntityDetail(fileInfo.getHash())
+                .getResult();
 
         if (entityDetail.getOwner().getSsoId() != 98878) {
             throw new VCXException(VCXExceptionStatus.UNAUTHORIZED);
         }
 
-
-        return contentRepository.addContent(name, hash, vcxFolder, description, videoType, genreTypes);
+        return contentRepository.addContent(fileInfo.getName(), fileInfo.getHash(), vcxFolder, description, videoType, genreTypes);
     }
 
     @Transactional

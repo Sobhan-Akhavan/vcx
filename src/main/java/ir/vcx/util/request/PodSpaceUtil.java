@@ -99,6 +99,32 @@ public class PodSpaceUtil {
         return result;
     }
 
+    public SpaceResponse<EntityDetail> uploaded_file_info(String fileUrl) throws VCXException {
+        SpaceResponse<EntityDetail> result;
+        try {
+            result = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .scheme(PODSPACE_SCHEME)
+                            .host(PODSPACE_HOST)
+                            .port(PODSPACE_PORT)
+                            .path("/api/files/uploaded_file_info/{file_url}")
+                            .build(fileUrl))
+                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<EntityDetail>>() {
+                    })
+                    .block();
+        } catch (WebClientResponseException e) {
+            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<SpaceResponse<EntityDetail>>() {
+            });
+            throw new VCXException(result.getStatus(), result.getError(), result.getMessage());
+        } catch (Exception e) {
+            log.error("Unknown error while get uploaded file info folder", e);
+            throw new VCXException(VCXExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
+        }
+        return result;
+    }
+
     public SpaceResponse<EntityDetail> getEntityDetail(String entityHash) throws VCXException {
         SpaceResponse<EntityDetail> result;
         try {
@@ -124,6 +150,7 @@ public class PodSpaceUtil {
         }
         return result;
     }
+
 
 //    public void wipeEntity(String entityHash) throws VCXException {
 //        try {

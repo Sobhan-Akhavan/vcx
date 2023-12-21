@@ -1,6 +1,5 @@
 package ir.vcx.api.configuration;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -8,6 +7,7 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.apache.commons.lang3.StringUtils;
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +39,14 @@ public class SwaggerConfiguration {
     private String SWAGGER_DESCRIPTION;
 
     @Bean
+    public GroupedOpenApi publicAPI() {
+        return GroupedOpenApi.builder()
+                .group("vcx-api-backend")
+                .pathsToMatch("/api/v1/**")
+                .build();
+    }
+
+    @Bean
     public OpenAPI openAPIInfo() {
         return new OpenAPI()
                 .components(new Components()
@@ -57,7 +65,6 @@ public class SwaggerConfiguration {
                 );
     }
 
-    @Hidden
     @Controller()
     public static class Home {
 

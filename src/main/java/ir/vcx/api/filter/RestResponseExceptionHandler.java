@@ -1,6 +1,5 @@
 package ir.vcx.api.filter;
 
-import io.swagger.v3.oas.annotations.Operation;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
@@ -109,7 +108,6 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
 
     @RestController
     public static class ErrorHandlerController implements ErrorController {
-        @Operation(hidden = true)
         @RequestMapping(value = "/error", produces = MediaType.APPLICATION_JSON_VALUE)
         public ResponseEntity<?> err(HttpServletRequest request, HttpServletResponse response) {
 

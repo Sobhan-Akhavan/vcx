@@ -58,15 +58,9 @@ public class ContentController {
     })
     @PostMapping
     public ResponseEntity<?> createContent(
-            @RequestParam(name = "name")
-            @Parameter(description = "name of video", required = true)
-            String name,
-            @RequestParam(name = "hash")
-            @Parameter(description = "hash of video", required = true)
-            String hash,
-            @RequestParam(name = "parentHash")
-            @Parameter(description = "parentHash of video", required = true)
-            String parentHash,
+            @RequestParam(name = "file_url")
+            @Parameter(description = "url of file which is uploaded completely", required = true)
+            String file_url,
             @RequestParam(name = "description")
             @Parameter(description = "description of video", required = true)
             String description,
@@ -78,7 +72,7 @@ public class ContentController {
             Set<GenreType> genreTypes
     ) throws VCXException {
 
-        VCXContent vcxContent = contentService.createContent(name, hash, parentHash, description, videoType, genreTypes);
+        VCXContent vcxContent = contentService.createContent(file_url, description, videoType, genreTypes);
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
