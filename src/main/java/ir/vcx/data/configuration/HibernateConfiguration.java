@@ -31,6 +31,8 @@ public class HibernateConfiguration {
     private String DDL_AUTO;
     @Value("${spring.jpa.hibernate.dialect}")
     private String DIALECT;
+    @Value("${spring.jpa.hibernate.naming.physical-strategy}")
+    private String PHYSICAL_STRATEGY;
 
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
@@ -62,10 +64,9 @@ public class HibernateConfiguration {
 
     private Properties hibernateProperties() {
         Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty(
-                "hibernate.hbm2ddl.auto", DDL_AUTO);
-        hibernateProperties.setProperty(
-                "hibernate.dialect", DIALECT);
+        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", DDL_AUTO);
+        hibernateProperties.setProperty("hibernate.dialect", DIALECT);
+        hibernateProperties.setProperty("hibernate.physical_naming_strategy", PHYSICAL_STRATEGY);
 
         return hibernateProperties;
     }
