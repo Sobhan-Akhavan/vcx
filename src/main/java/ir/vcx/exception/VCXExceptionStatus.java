@@ -23,6 +23,7 @@ public enum VCXExceptionStatus {
 
     FORBIDDEN(403, "Forbidden", "درخواست دسترسی رد شد"),
     NOT_FOUND(404, "Request Not found", "درخواست مورد نظر پیدا نشد"),
+    PARENT_FOLDER_NOT_FOUND(404, "Parent folder not found", "پوشه مقصد پیدا نشد"),
 
     SSO_CONNECTION_ERROR(500, "SSO Server Connection Error", "ارتباط با سرور SSO با مشکل مواجه شده است"),
 

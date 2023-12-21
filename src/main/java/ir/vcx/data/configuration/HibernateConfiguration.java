@@ -27,6 +27,10 @@ public class HibernateConfiguration {
     private String USERNAME;
     @Value("${spring.datasource.hikari.password}")
     private String PASSWORD;
+    @Value("${spring.jpa.hibernate.ddl-auto}")
+    private String DDL_AUTO;
+    @Value("${spring.jpa.hibernate.dialect}")
+    private String DIALECT;
 
     @Bean
     public LocalSessionFactoryBean sessionFactory() {
@@ -59,9 +63,9 @@ public class HibernateConfiguration {
     private Properties hibernateProperties() {
         Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty(
-                "hibernate.hbm2ddl.auto", "create");
+                "hibernate.hbm2ddl.auto", DDL_AUTO);
         hibernateProperties.setProperty(
-                "hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+                "hibernate.dialect", DIALECT);
 
         return hibernateProperties;
     }
