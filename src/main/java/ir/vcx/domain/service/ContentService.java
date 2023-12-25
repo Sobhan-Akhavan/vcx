@@ -13,12 +13,16 @@ import ir.vcx.exception.VCXExceptionStatus;
 import ir.vcx.util.request.PodSpaceUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Created by Sobhan on 11/30/2023 - VCX
@@ -31,12 +35,14 @@ public class ContentService {
     private final FolderRepository folderRepository;
     private final ContentRepository contentRepository;
     private final PodSpaceUtil podSpaceUtil;
+    private final ThreadPoolExecutor threadPoolFactory;
 
     @Autowired
-    public ContentService(FolderRepository folderRepository, ContentRepository contentRepository, PodSpaceUtil podSpaceUtil) {
+    public ContentService(FolderRepository folderRepository, ContentRepository contentRepository, PodSpaceUtil podSpaceUtil, ThreadPoolExecutor threadPoolFactory) {
         this.folderRepository = folderRepository;
         this.contentRepository = contentRepository;
         this.podSpaceUtil = podSpaceUtil;
+        this.threadPoolFactory = threadPoolFactory;
     }
 
     @Transactional
@@ -49,12 +55,7 @@ public class ContentService {
         VCXFolder vcxFolder = folderRepository.getFolder(fileInfo.getParentHash())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.NOT_FOUND));
 
-        EntityDetail entityDetail = podSpaceUtil.getEntityDetail(fileInfo.getHash())
-                .getResult();
-
-        if (entityDetail.getOwner().getSsoId() != 98878) {
-            throw new VCXException(VCXExceptionStatus.UNAUTHORIZED);
-        }
+        checkFileOwnerValidation(fileInfo.getHash());
 
         return contentRepository.addContent(fileInfo.getName(), fileInfo.getHash(), vcxFolder, description, videoType, genreTypes);
     }
@@ -87,13 +88,47 @@ public class ContentService {
         return contentRepository.updateContent(vcxContent);
     }
 
-    @Transactional
-    public List<VCXContent> getContents(String name, VideoType videoType, Set<GenreType> genreTypes, Paging paging) throws VCXException {
 
-        if (StringUtils.isNotBlank(name) && name.length() <= 3) {
+    public Pair<List<VCXContent>, Long> getContents(String name, VideoType videoType, Set<GenreType> genreTypes, Paging paging) throws VCXException {
+
+        if (StringUtils.isNotBlank(name) && name.length() < 3) {
             throw new VCXException(VCXExceptionStatus.INVALID_NAME_VALUE_LENGTH);
         }
 
-        return contentRepository.getContents(name, videoType, genreTypes, paging);
+        Future<List<VCXContent>> getContentsThread = threadPoolFactory.submit(() -> contentRepository.getContents(name, videoType, genreTypes, paging));
+
+        Future<Long> getContentsCountThread = threadPoolFactory.submit(() -> contentRepository.getContentsCount(name, videoType, genreTypes));
+
+        try {
+            List<VCXContent> contents = getContentsThread.get();
+            Long contentsCount = getContentsCountThread.get();
+
+            return Pair.of(contents, contentsCount);
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+
+            throw new VCXException(VCXExceptionStatus.UNKNOWN_ERROR);
+        }
+
+    }
+
+    @Transactional
+    public VCXContent addPoster(String hash, String posterHash) throws VCXException {
+        VCXContent content = getContent(hash);
+
+        checkFileOwnerValidation(posterHash);
+
+        content.setPosterHash(posterHash);
+
+        return content;
+    }
+
+    private void checkFileOwnerValidation(String hash) throws VCXException {
+        EntityDetail entityDetail = podSpaceUtil.getEntityDetail(hash)
+                .getResult();
+
+        if (entityDetail.getOwner().getSsoId() != 98878) {
+            throw new VCXException(VCXExceptionStatus.UNAUTHORIZED);
+        }
     }
 }

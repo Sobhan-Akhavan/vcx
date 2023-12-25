@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.vcx.api.model.ApiPageList;
 import ir.vcx.api.model.Order;
 import ir.vcx.api.model.Paging;
 import ir.vcx.api.model.RestResponse;
@@ -17,6 +18,7 @@ import ir.vcx.data.entity.VideoType;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.ContentService;
 import ir.vcx.exception.VCXException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -176,7 +178,7 @@ public class ContentController {
     @GetMapping
     public ResponseEntity<?> getContents(
             @RequestParam(name = "name", required = false)
-            @Parameter(description = "name of videos (must be 3 character minimum")
+            @Parameter(description = "name of videos (must be 3 character minimum)")
             String name,
             @RequestParam(name = "videType", required = false)
             @Parameter(description = "type of video")
@@ -202,11 +204,11 @@ public class ContentController {
 
         Paging paging = new Paging(start, size, order, desc);
 
-        List<VCXContent> contents = contentService.getContents(name, videoType, genreTypes, paging);
+        Pair<List<VCXContent>, Long> contents = contentService.getContents(name, videoType, genreTypes, paging);
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(contents)
+                .result(new ApiPageList<>(contents.getKey(), contents.getValue()))
                 .build()
         );
     }

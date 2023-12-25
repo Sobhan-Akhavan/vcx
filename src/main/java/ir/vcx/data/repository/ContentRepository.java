@@ -5,11 +5,14 @@ import ir.vcx.data.entity.GenreType;
 import ir.vcx.data.entity.VCXContent;
 import ir.vcx.data.entity.VCXFolder;
 import ir.vcx.data.entity.VideoType;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -67,21 +70,92 @@ public class ContentRepository {
 
     }
 
+    @Transactional
     public List<VCXContent> getContents(String name, VideoType videoType, Set<GenreType> genreTypes, Paging paging) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
-        return currentSession.createQuery("SELECT VC FROM VCXContent VC " +
-                        "WHERE lower(VC.name) LIKE :name " +
-                        "AND VC.videoType = :videoType " +
-                        "AND VC.genreType IN :genreTypes " +
-                        "ORDER BY " + paging.getOrder() + " " +
-                        (paging.isDesc() ? "desc" : ""), VCXContent.class)
-                .setParameter("name", "%" + name.toLowerCase() + "%")
-                .setParameter("videoType", videoType)
-                .setParameter("genreTypes", genreTypes)
+        StringBuilder stringQuery = new StringBuilder("SELECT VC FROM VCXContent VC ");
+
+        stringQuery.append("INNER JOIN FETCH VC.genreType VCG ");
+
+        boolean isWhereClauseAdded = false;
+        if (StringUtils.isNotBlank(name)) {
+            stringQuery.append("WHERE LOWER(VC.name) LIKE :name ");
+            isWhereClauseAdded = true;
+        }
+
+        if (videoType != null) {
+            stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
+            stringQuery.append("VC.videoType = :videoType ");
+        }
+
+        if (genreTypes != null && !genreTypes.isEmpty()) {
+            stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
+            stringQuery.append("VCG IN :genreTypes ");
+        }
+
+        stringQuery.append("ORDER BY ").append(paging.getOrder()).append(" ")
+                .append((paging.isDesc() ? "desc" : "asc"));
+
+        Query<VCXContent> query = currentSession.createQuery(stringQuery.toString(), VCXContent.class);
+
+        if (StringUtils.isNotBlank(name)) {
+            query.setParameter("name", "%" + name.toLowerCase() + "%");
+        }
+
+        if (videoType != null) {
+            query.setParameter("videoType", videoType);
+        }
+
+        if (genreTypes != null && !genreTypes.isEmpty()) {
+            query.setParameterList("genreTypes", genreTypes);
+        }
+
+        return query
                 .setFirstResult(paging.getStart())
                 .setMaxResults(paging.getSize())
                 .getResultList();
+    }
+
+    @Transactional
+    public Long getContentsCount(String name, VideoType videoType, Set<GenreType> genreTypes) {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        StringBuilder stringQuery = new StringBuilder("SELECT COUNT(VC) FROM VCXContent VC ");
+
+        stringQuery.append("INNER JOIN VC.genreType VCG ");
+
+        boolean isWhereClauseAdded = false;
+        if (StringUtils.isNotBlank(name)) {
+            stringQuery.append("WHERE LOWER(VC.name) LIKE :name ");
+            isWhereClauseAdded = true;
+        }
+
+        if (videoType != null) {
+            stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
+            stringQuery.append("VC.videoType = :videoType ");
+        }
+
+        if (genreTypes != null && !genreTypes.isEmpty()) {
+            stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
+            stringQuery.append("VCG IN :genreTypes ");
+        }
+
+        Query<Long> query = currentSession.createQuery(stringQuery.toString(), Long.class);
+
+        if (StringUtils.isNotBlank(name)) {
+            query.setParameter("name", "%" + name.toLowerCase() + "%");
+        }
+
+        if (videoType != null) {
+            query.setParameter("videoType", videoType);
+        }
+
+        if (genreTypes != null && !genreTypes.isEmpty()) {
+            query.setParameterList("genreTypes", genreTypes);
+        }
+
+        return query.getSingleResult();
     }
 }
