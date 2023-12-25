@@ -1,5 +1,6 @@
 package ir.vcx.domain.service;
 
+import ir.vcx.api.model.Paging;
 import ir.vcx.data.entity.GenreType;
 import ir.vcx.data.entity.VCXContent;
 import ir.vcx.data.entity.VCXFolder;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -61,7 +63,7 @@ public class ContentService {
     public VCXContent getContent(String hash) throws VCXException {
 
         return contentRepository.getContent(hash)
-                .orElseThrow(() -> new VCXException(VCXExceptionStatus.NOT_FOUND));
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.CONTENT_NOT_FOUND));
     }
 
     @Transactional
@@ -83,5 +85,15 @@ public class ContentService {
 
 
         return contentRepository.updateContent(vcxContent);
+    }
+
+    @Transactional
+    public List<VCXContent> getContents(String name, VideoType videoType, Set<GenreType> genreTypes, Paging paging) throws VCXException {
+
+        if (StringUtils.isNotBlank(name) && name.length() <= 3) {
+            throw new VCXException(VCXExceptionStatus.INVALID_NAME_VALUE_LENGTH);
+        }
+
+        return contentRepository.getContents(name, videoType, genreTypes, paging);
     }
 }

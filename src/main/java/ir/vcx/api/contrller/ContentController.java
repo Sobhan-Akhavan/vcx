@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.vcx.api.model.Order;
+import ir.vcx.api.model.Paging;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.data.entity.GenreType;
 import ir.vcx.data.entity.VCXContent;
@@ -21,6 +23,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -149,6 +154,59 @@ public class ContentController {
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
                 .result(vcxContent)
+                .build()
+        );
+    }
+
+    @Operation(
+            summary = "get contents",
+            description = "get list of contents"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @GetMapping
+    public ResponseEntity<?> getContents(
+            @RequestParam(name = "name", required = false)
+            @Parameter(description = "name of videos (must be 3 character minimum")
+            String name,
+            @RequestParam(name = "videType", required = false)
+            @Parameter(description = "type of video")
+            VideoType videoType,
+            @RequestParam(name = "genreType", required = false)
+            @Parameter(description = "type of genres")
+            Set<GenreType> genreTypes,
+            @RequestParam(value = "start", defaultValue = "0")
+            @Parameter(description = "offset of pagination", schema = @Schema(defaultValue = "0", minimum = "0"), required = true)
+            int start,
+            @RequestParam(value = "size", defaultValue = "20")
+            @Parameter(description = "size of pagination", schema = @Schema(defaultValue = "20", minimum = "1"), required = true)
+            int size,
+            @RequestParam(name = "order", defaultValue = "CREATED")
+            @Parameter(description = "sort result by", schema = @Schema(defaultValue = "CREATED", allowableValues = {"CREATED"}), required = true)
+            Order order,
+            @RequestParam(name = "desc", defaultValue = "false")
+            @Parameter(description = "sort returned items ascending or descending", schema = @Schema(defaultValue = "FALSE", allowableValues = {"FALSE", "TRUE"}), required = true)
+            boolean desc
+    ) throws VCXException {
+
+        Paging.checkOrder(new HashSet<>(Collections.singleton(Order.CREATED)), order);
+
+        Paging paging = new Paging(start, size, order, desc);
+
+        List<VCXContent> contents = contentService.getContents(name, videoType, genreTypes, paging);
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .status(HttpStatus.OK)
+                .result(contents)
                 .build()
         );
     }

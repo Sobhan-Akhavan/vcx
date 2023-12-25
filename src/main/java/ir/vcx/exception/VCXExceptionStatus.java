@@ -14,15 +14,16 @@ public enum VCXExceptionStatus {
     SSO_INVALID_REQUEST(400, "SSO Invalid Code Request", "کد تایید اشتباه می باشد و یا زمان استفاده از آن به اتمام رسیده است"),
     INVALID_REDIRECT_URI(400, "Invalid Redirect Uri", "درخواست معتبر نمی‌باشد"),
     INVALID_SSO_TYPE(400, "Invalid SSO Type", "درخواست معتبر نمی‌باشد"),
-
     INVALID_NAME_VALUE(400, "Invalid name value", "نام وارد شده معتبر نمی‌باشد."),
-
+    INVALID_NAME_VALUE_LENGTH(400, "Invalid name value length", "نام وارد شده حدااقل می‌بایست دارای ۳ حرف باشد"),
+    INVALID_PAGINATION_ORDER(400, "Invalid pagination order", "نوع مرتب کننده لیست قابل قبول نمی‌باشد"),
 
     UNAUTHORIZED(401, "Unauthorized", "درخواست دسترسی معتبر نیست"),
     INVALID_AUTHORIZATION_TYPE(401, "Invalid authorization type", "احراز هویت باید از نوع Bearer باشد"),
 
     FORBIDDEN(403, "Forbidden", "درخواست دسترسی رد شد"),
-    NOT_FOUND(404, "Request Not found", "درخواست مورد نظر پیدا نشد"),
+    NOT_FOUND(404, "Request not found", "درخواست مورد نظر پیدا نشد"),
+    CONTENT_NOT_FOUND(404, "Content not found", "محتوایی با این شناسه یافت نشد"),
     PARENT_FOLDER_NOT_FOUND(404, "Parent folder not found", "پوشه مقصد پیدا نشد"),
 
     SSO_CONNECTION_ERROR(500, "SSO Server Connection Error", "ارتباط با سرور SSO با مشکل مواجه شده است"),

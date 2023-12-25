@@ -1,5 +1,6 @@
 package ir.vcx.data.repository;
 
+import ir.vcx.api.model.Paging;
 import ir.vcx.data.entity.GenreType;
 import ir.vcx.data.entity.VCXContent;
 import ir.vcx.data.entity.VCXFolder;
@@ -9,6 +10,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -63,5 +65,23 @@ public class ContentRepository {
 
         return vcxContent;
 
+    }
+
+    public List<VCXContent> getContents(String name, VideoType videoType, Set<GenreType> genreTypes, Paging paging) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT VC FROM VCXContent VC " +
+                        "WHERE lower(VC.name) LIKE :name " +
+                        "AND VC.videoType = :videoType " +
+                        "AND VC.genreType IN :genreTypes " +
+                        "ORDER BY " + paging.getOrder() + " " +
+                        (paging.isDesc() ? "desc" : ""), VCXContent.class)
+                .setParameter("name", "%" + name.toLowerCase() + "%")
+                .setParameter("videoType", videoType)
+                .setParameter("genreTypes", genreTypes)
+                .setFirstResult(paging.getStart())
+                .setMaxResults(paging.getSize())
+                .getResultList();
     }
 }
