@@ -213,4 +213,38 @@ public class ContentController {
         );
     }
 
+    @Operation(
+            summary = "add poster for content",
+            description = "add poster"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @PutMapping("/{hash}/poster/{posterHash}")
+    public ResponseEntity<?> addPoster(
+            @PathVariable(name = "hash")
+            @Parameter(description = "hash of video", required = true)
+            String hash,
+            @PathVariable(name = "posterHash")
+            @Parameter(description = "poster hash", required = true)
+            String posterHash
+    ) throws VCXException {
+
+        VCXContent vcxContent = contentService.addPoster(hash, posterHash);
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .status(HttpStatus.OK)
+                .result(vcxContent)
+                .build()
+        );
+    }
+
 }

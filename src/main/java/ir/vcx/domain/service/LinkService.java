@@ -1,5 +1,6 @@
 package ir.vcx.domain.service;
 
+import ir.vcx.data.entity.VCXContent;
 import ir.vcx.data.entity.VCXFolder;
 import ir.vcx.data.entity.VCXLink;
 import ir.vcx.data.entity.VideoType;
@@ -23,18 +24,20 @@ import java.util.Optional;
 public class LinkService {
 
     private final FolderService folderService;
+    private final ContentService contentService;
     private final LinkRepository linkRepository;
     private final PodSpaceUtil podSpaceUtil;
 
     @Autowired
-    public LinkService(FolderService folderService, LinkRepository linkRepository, PodSpaceUtil podSpaceUtil) {
+    public LinkService(FolderService folderService, ContentService contentService, LinkRepository linkRepository, PodSpaceUtil podSpaceUtil) {
         this.folderService = folderService;
+        this.contentService = contentService;
         this.linkRepository = linkRepository;
         this.podSpaceUtil = podSpaceUtil;
     }
 
     @Transactional
-    public VCXLink getUploadLink(String name, Integer season) throws VCXException {
+    public VCXLink getContentUploadLink(String name, Integer season) throws VCXException {
 
         if (StringUtils.isBlank(name)) {
             throw new VCXException(VCXExceptionStatus.INVALID_NAME_VALUE);
@@ -63,5 +66,12 @@ public class LinkService {
                         throw new RuntimeException(e);
                     }
                 });
+    }
+
+    public VCXLink getPosterUploadLink(String hash) throws VCXException {
+        VCXContent content = contentService.getContent(hash);
+
+        return linkRepository.getUploadLink(content.getParentFolder())
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.INVALID_REQUEST));
     }
 }

@@ -33,6 +33,9 @@ public class VCXContent {
     @Column(name = "HASH", nullable = false)
     private String hash;
 
+    @Column(name = "POSTER_HASH")
+    private String posterHash;
+
     @ManyToOne(fetch = FetchType.EAGER)
     private VCXFolder parentFolder;
 

@@ -37,8 +37,8 @@ public class LinkController {
     }
 
     @Operation(
-            summary = "upload link",
-            description = "get link for upload in specific destination"
+            summary = "content upload link",
+            description = "get link for content upload in specific destination"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful Operation",
@@ -51,8 +51,8 @@ public class LinkController {
                     content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = RestResponse.class))}),
     })
-    @GetMapping("/upload")
-    public ResponseEntity<?> getUploadLink(
+    @GetMapping("/contents/upload")
+    public ResponseEntity<?> getContentUploadLink(
             @RequestParam(name = "name")
             @Parameter(description = "name of folder(destination folder for upload file)", required = true)
             String name,
@@ -61,11 +61,42 @@ public class LinkController {
             Integer season
     ) throws VCXException {
 
-        VCXLink uploadLink = linkService.getUploadLink(name, season);
+        VCXLink uploadLink = linkService.getContentUploadLink(name, season);
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
                 .result(uploadLink)
+                .build()
+        );
+    }
+
+    @Operation(
+            summary = "poster upload link",
+            description = "get link for poster upload in specific destination"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @GetMapping("/contents/{hash}/posters/upload")
+    public ResponseEntity<?> getPosterUploadLink(
+            @PathVariable(name = "hash")
+            @Parameter(description = "hash of video", required = true)
+            String hash
+    ) throws VCXException {
+
+        VCXLink posterUploadLink = linkService.getPosterUploadLink(hash);
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .status(HttpStatus.OK)
+                .result(posterUploadLink)
                 .build()
         );
     }
