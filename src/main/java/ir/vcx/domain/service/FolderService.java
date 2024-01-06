@@ -76,7 +76,7 @@ public class FolderService {
     public VCXFolder getOrCreateFolder(String name, Integer season, VideoType videoType) throws VCXException {
 
         VCXFolder primaryFolder = folderRepository.getAvailableFolderByName(videoType.name())
-                .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNKNOWN_ERROR));
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.FOLDER_NOT_FOUND));
 
         VCXFolder contentFolder = folderRepository.getAvailableFolderByName(name, primaryFolder)
                 .orElseGet(() -> {

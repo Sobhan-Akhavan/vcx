@@ -26,6 +26,17 @@ public class FolderRepository {
 
 
     @Transactional
+    public Optional<VCXFolder> getFolder(String hash) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT VF FROM VCXFolder VF " +
+                        "WHERE VF.hash = :hash", VCXFolder.class)
+                .setParameter("hash", hash)
+                .uniqueResultOptional();
+
+    }
+    @Transactional
     public Optional<VCXFolder> getAvailableFolderByName(String name) {
 
         Session currentSession = sessionFactory.getCurrentSession();
@@ -34,19 +45,7 @@ public class FolderRepository {
                         "WHERE UPPER(VF.name) = :name " +
                         "AND VF.active = :val", VCXFolder.class)
                 .setParameter("name", name.toUpperCase())
-                .setParameter("val", Boolean.FALSE)
-                .uniqueResultOptional();
-
-    }
-
-    @Transactional
-    public Optional<VCXFolder> getFolder(String hash) {
-
-        Session currentSession = sessionFactory.getCurrentSession();
-
-        return currentSession.createQuery("SELECT VF FROM VCXFolder VF " +
-                        "WHERE VF.hash = :hash", VCXFolder.class)
-                .setParameter("hash", hash)
+                .setParameter("val", Boolean.TRUE)
                 .uniqueResultOptional();
 
     }
@@ -58,9 +57,11 @@ public class FolderRepository {
 
         return currentSession.createQuery("SELECT VF FROM VCXFolder VF " +
                         "WHERE UPPER(VF.name) = :name " +
-                        "AND VF.parent = :parent", VCXFolder.class)
+                        "AND VF.parent = :parent " +
+                        "AND VF.active = :val", VCXFolder.class)
                 .setParameter("name", name.toUpperCase())
                 .setParameter("parent", parent)
+                .setParameter("val", Boolean.TRUE)
                 .uniqueResultOptional();
 
     }
