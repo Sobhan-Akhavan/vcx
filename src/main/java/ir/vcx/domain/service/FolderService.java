@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import java.util.Optional;
 
 /**
  * Created by Sobhan on 11/23/2023 - VCX
@@ -36,7 +38,7 @@ public class FolderService {
     @PostConstruct
     public void checkPrimaryFolders() {
 
-        VCXFolder videosFolder = folderRepository.getFolderByName(VIDEOS_FOLDER_NAME)
+        VCXFolder videosFolder = folderRepository.getAvailableFolderByName(VIDEOS_FOLDER_NAME)
                 .orElseGet(() -> {
                     try {
                         Folder folder = podSpaceUtil.createFolder(VIDEOS_FOLDER_NAME, ROOT_FOLDER_HASH).getResult();
@@ -48,7 +50,7 @@ public class FolderService {
                     }
                 });
 
-        folderRepository.getFolderByName(MOVIES_FOLDER_NAME, videosFolder)
+        folderRepository.getAvailableFolderByName(MOVIES_FOLDER_NAME, videosFolder)
                 .orElseGet(() -> {
                     try {
                         Folder folder = podSpaceUtil.createFolder(MOVIES_FOLDER_NAME, videosFolder.getHash()).getResult();
@@ -59,7 +61,7 @@ public class FolderService {
                     }
                 });
 
-        folderRepository.getFolderByName(SERIES_FOLDER_NAME, videosFolder)
+        folderRepository.getAvailableFolderByName(SERIES_FOLDER_NAME, videosFolder)
                 .orElseGet(() -> {
                     try {
                         Folder folder = podSpaceUtil.createFolder(SERIES_FOLDER_NAME, videosFolder.getHash()).getResult();
@@ -73,10 +75,10 @@ public class FolderService {
 
     public VCXFolder getOrCreateFolder(String name, Integer season, VideoType videoType) throws VCXException {
 
-        VCXFolder primaryFolder = folderRepository.getFolderByName(videoType.name())
+        VCXFolder primaryFolder = folderRepository.getAvailableFolderByName(videoType.name())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNKNOWN_ERROR));
 
-        VCXFolder contentFolder = folderRepository.getFolderByName(name, primaryFolder)
+        VCXFolder contentFolder = folderRepository.getAvailableFolderByName(name, primaryFolder)
                 .orElseGet(() -> {
                     try {
                         Folder podSpaceContentFolder = podSpaceUtil.createFolder(name, primaryFolder.getHash()).getResult();
@@ -91,7 +93,7 @@ public class FolderService {
 
         if (videoType.equals(VideoType.SERIES)) {
 
-            return folderRepository.getFolderByName(String.valueOf(season), contentFolder)
+            return folderRepository.getAvailableFolderByName(String.valueOf(season), contentFolder)
                     .orElseGet(() -> {
                         try {
                             Folder podSpaceNestedSeriesFolder = podSpaceUtil.createFolder(String.valueOf(season),
@@ -107,5 +109,26 @@ public class FolderService {
         }
 
         return contentFolder;
+    }
+
+    @Transactional
+    public VCXFolder deleteFolder(String name, Integer season) throws VCXException {
+
+        VCXFolder vcxFolder;
+
+        vcxFolder = folderRepository.getAvailableFolderByName(name.toUpperCase())
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.FOLDER_NOT_FOUND));
+
+        if (Optional.ofNullable(season).isPresent()) {
+            vcxFolder = folderRepository.getAvailableFolderByName(String.valueOf(season), vcxFolder)
+                    .orElseThrow(() -> new VCXException(VCXExceptionStatus.FOLDER_NOT_FOUND));
+
+        }
+
+        podSpaceUtil.wipeEntity(vcxFolder.getHash());
+
+        vcxFolder.setActive(Boolean.FALSE);
+
+        return folderRepository.updateFolder(vcxFolder);
     }
 }

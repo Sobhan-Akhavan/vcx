@@ -69,7 +69,7 @@ public class LinkService {
     }
 
     public VCXLink getPosterUploadLink(String hash) throws VCXException {
-        VCXContent content = contentService.getContent(hash);
+        VCXContent content = contentService.getAvailableContent(hash);
 
         return linkRepository.getUploadLink(content.getParentFolder())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.INVALID_REQUEST));

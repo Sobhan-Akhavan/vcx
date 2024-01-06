@@ -15,6 +15,7 @@ import ir.vcx.api.model.RestResponse;
 import ir.vcx.data.entity.GenreType;
 import ir.vcx.data.entity.VCXContent;
 import ir.vcx.data.entity.VideoType;
+import ir.vcx.data.mapper.ContentMapper;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.ContentService;
 import ir.vcx.exception.VCXException;
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by Sobhan on 11/23/2023 - VCX
@@ -37,7 +39,6 @@ import java.util.Set;
 @Tag(name = "Content Management")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/contents")
-@SecurityRequirement(name = "Bearer")
 @RestController
 public class ContentController {
 
@@ -64,6 +65,7 @@ public class ContentController {
                             schema = @Schema(implementation = RestResponse.class))}),
     })
     @PostMapping
+    @SecurityRequirement(name = "Bearer")
     public ResponseEntity<?> createContent(
             @RequestParam(name = "file_url")
             @Parameter(description = "url of file which is uploaded completely", required = true)
@@ -81,9 +83,11 @@ public class ContentController {
 
         VCXContent vcxContent = contentService.createContent(file_url, description, videoType, genreTypes);
 
+        ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
+
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(vcxContent)
+                .result(new ApiPageList<>(content))
                 .build()
         );
     }
@@ -111,11 +115,13 @@ public class ContentController {
             String hash
     ) throws VCXException {
 
-        VCXContent vcxContent = contentService.getContent(hash);
+        VCXContent vcxContent = contentService.getAvailableContent(hash);
+
+        ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(vcxContent)
+                .result(new ApiPageList<>(content))
                 .build()
         );
     }
@@ -136,6 +142,7 @@ public class ContentController {
                             schema = @Schema(implementation = RestResponse.class))}),
     })
     @PatchMapping("/{hash}")
+    @SecurityRequirement(name = "Bearer")
     public ResponseEntity<?> updateContent(
             @PathVariable(name = "hash")
             @Parameter(description = "hash of video", required = true)
@@ -153,9 +160,45 @@ public class ContentController {
 
         VCXContent vcxContent = contentService.updateContent(hash, name, description, genreTypes);
 
+        ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
+
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(vcxContent)
+                .result(new ApiPageList<>(content))
+                .build()
+        );
+    }
+
+    @Operation(
+            summary = "delete content",
+            description = "delete content"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @DeleteMapping("/{hash}")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<?> deleteContent(
+            @PathVariable(name = "hash")
+            @Parameter(description = "hash of video", required = true)
+            String hash
+    ) throws VCXException {
+
+        VCXContent vcxContent = contentService.deleteContent(hash);
+
+        ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .status(HttpStatus.OK)
+                .result(new ApiPageList<>(content))
                 .build()
         );
     }
@@ -192,8 +235,8 @@ public class ContentController {
             @RequestParam(value = "size", defaultValue = "20")
             @Parameter(description = "size of pagination", schema = @Schema(defaultValue = "20", minimum = "1"), required = true)
             int size,
-            @RequestParam(name = "order", defaultValue = "CREATED")
-            @Parameter(description = "sort result by", schema = @Schema(defaultValue = "CREATED", allowableValues = {"CREATED"}), required = true)
+            @RequestParam(name = "order", defaultValue = "UPDATED")
+            @Parameter(description = "sort result by", schema = @Schema(defaultValue = "UPDATED", allowableValues = {"CREATED", "UPDATED"}), required = true)
             Order order,
             @RequestParam(name = "desc", defaultValue = "false")
             @Parameter(description = "sort returned items ascending or descending", schema = @Schema(defaultValue = "FALSE", allowableValues = {"FALSE", "TRUE"}), required = true)
@@ -206,9 +249,11 @@ public class ContentController {
 
         Pair<List<VCXContent>, Long> contents = contentService.getContents(name, videoType, genreTypes, paging);
 
+        Set<ir.vcx.api.model.VCXContent> contentList = contents.getKey().stream().map(ContentMapper.INSTANCE::entityToApi).collect(Collectors.toSet());
+
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(new ApiPageList<>(contents.getKey(), contents.getValue()))
+                .result(new ApiPageList<>(contentList, contents.getValue()))
                 .build()
         );
     }
@@ -229,20 +274,26 @@ public class ContentController {
                             schema = @Schema(implementation = RestResponse.class))}),
     })
     @PutMapping("/{hash}/poster/{posterHash}")
+    @SecurityRequirement(name = "Bearer")
     public ResponseEntity<?> addPoster(
             @PathVariable(name = "hash")
             @Parameter(description = "hash of video", required = true)
             String hash,
             @PathVariable(name = "posterHash")
             @Parameter(description = "poster hash", required = true)
-            String posterHash
+            String posterHash,
+            @RequestParam(name = "horizontal")
+            @Parameter(description = "poster orientation type", required = true)
+            boolean horizontal
     ) throws VCXException {
 
-        VCXContent vcxContent = contentService.addPoster(hash, posterHash);
+        VCXContent vcxContent = contentService.addPoster(hash, posterHash, horizontal);
+
+        ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(vcxContent)
+                .result(new ApiPageList<>(content))
                 .build()
         );
     }

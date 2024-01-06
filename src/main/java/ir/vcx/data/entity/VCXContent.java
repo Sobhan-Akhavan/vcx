@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -33,10 +34,11 @@ public class VCXContent {
     @Column(name = "HASH", nullable = false)
     private String hash;
 
-    @Column(name = "POSTER_HASH")
-    private String posterHash;
+    @OneToMany(fetch = FetchType.LAZY)
+    @Column(nullable = false)
+    private Set<VCXPoster> posters = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private VCXFolder parentFolder;
 
     @Column(name = "DESCRIPTION", nullable = false)
@@ -46,8 +48,11 @@ public class VCXContent {
     private VideoType videoType;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @Column(name = "GENRE_TYPE", nullable = false)
-    private Set<GenreType> genreType;
+    @Column(nullable = false)
+    private Set<GenreType> genresType;
+
+    @Column(name = "ACTIVE", nullable = false)
+    private Boolean active = Boolean.TRUE;
 
     @Version
     @Column(name = "OPTLOCK", nullable = false)

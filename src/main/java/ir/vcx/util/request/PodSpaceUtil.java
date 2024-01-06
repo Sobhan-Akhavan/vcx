@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -152,30 +153,31 @@ public class PodSpaceUtil {
     }
 
 
-//    public void wipeEntity(String entityHash) throws VCXException {
-//        try {
-//            webClient.delete()
-//                    .uri(uriBuilder -> uriBuilder
-//                            .scheme(PODSPACE_SCHEME)
-//                            .host(PODSPACE_HOST)
-//                            .port(PODSPACE_PORT)
-//                            .path("/api/trashes/{hash}")
-//                            .queryParam("force", true)
-//                            .build(entityHash))
-//                    .header("Authorization", "Bearer " + API_TOKEN)
-//                    .retrieve()
-//                    .bodyToMono(new ParameterizedTypeReference<>() {
-//                    })
-//                    .block();
-//        } catch (WebClientResponseException e) {
-//            VCXException<Object> result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<>() {
-//            });
-//            throw new VCXException(result.getStatus(), result.getError(), result.getMessage());
-//        } catch (Exception e) {
-//            log.error("Unknown error while wipe entity", e);
-//            throw new VCXException(VCXExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
-//        }
-//    }
+    public void wipeEntity(String entityHash) throws VCXException {
+        try {
+            webClient.delete()
+                    .uri(uriBuilder -> uriBuilder
+                            .scheme(PODSPACE_SCHEME)
+                            .host(PODSPACE_HOST)
+                            .port(PODSPACE_PORT)
+                            .path("/api/trashes/{hash}")
+                            .queryParam("force", true)
+                            .build(entityHash))
+                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<String>() {
+                    })
+                    .block();
+        } catch (WebClientResponseException e) {
+            SpaceResponse<Objects> result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<SpaceResponse<Objects>>() {
+            });
+
+            throw new VCXException(result.getStatus(), result.getError(), result.getMessage());
+        } catch (Exception e) {
+            log.error("Unknown error while wipe entity", e);
+            throw new VCXException(VCXExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
+        }
+    }
 //
 //    public SpaceResponse<UserGroup> createUserGroup(Set<Long> ssoId, String destFolderHash) throws ArchiveException {
 //        SpaceResponse<UserGroup> result;

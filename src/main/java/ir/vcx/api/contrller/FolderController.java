@@ -1,6 +1,7 @@
 package ir.vcx.api.contrller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,42 +10,34 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.vcx.api.model.ApiPageList;
 import ir.vcx.api.model.RestResponse;
-import ir.vcx.data.entity.VCXUser;
-import ir.vcx.data.mapper.UserMapper;
+import ir.vcx.data.entity.VCXFolder;
+import ir.vcx.data.mapper.FolderMapper;
 import ir.vcx.domain.model.sso.otp.Handshake;
+import ir.vcx.domain.service.FolderService;
 import ir.vcx.exception.VCXException;
-import ir.vcx.exception.VCXExceptionStatus;
-import ir.vcx.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-/**
- * Created by Sobhan on 11/16/2023 - VCX
- */
-
-@Tag(name = "Me")
+@Tag(name = "Folder Management")
 @CrossOrigin("*")
-@RequestMapping("/api/v1/me")
+@RequestMapping("/api/v1/folders")
 @SecurityRequirement(name = "Bearer")
 @RestController
-public class AboutMeController {
+public class FolderController {
 
-    private final UserUtil userUtil;
+    private final FolderService folderService;
 
     @Autowired
-    public AboutMeController(UserUtil userUtil) {
-        this.userUtil = userUtil;
+    public FolderController(FolderService folderService) {
+        this.folderService = folderService;
     }
 
     @Operation(
-            summary = "about user",
-            description = "get detail about user"
+            summary = "delete folder",
+            description = "delete folder"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful Operation",
@@ -57,20 +50,24 @@ public class AboutMeController {
                     content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = RestResponse.class))}),
     })
-    @GetMapping
-    public ResponseEntity<?> getUser() throws VCXException {
+    @DeleteMapping
+    public ResponseEntity<?> deleteFolder(
+            @RequestParam(name = "name")
+            @Parameter(description = "name of folder(destination folder for upload file)", required = true)
+            String name,
+            @RequestParam(name = "season", required = false)
+            @Parameter(description = "season of series")
+            Integer season
+    ) throws VCXException {
 
-        VCXUser vcxUser = userUtil.getCredential().getUser();
+        VCXFolder vcxFolder = folderService.deleteFolder(name, season);
 
-        if (vcxUser == null) {
-            throw new VCXException(VCXExceptionStatus.UNAUTHORIZED);
-        }
-
-        ir.vcx.api.model.VCXUser user = UserMapper.INSTANCE.entityToApi(vcxUser);
+        ir.vcx.api.model.VCXFolder folder = FolderMapper.INSTANCE.entityToApi(vcxFolder);
 
         return ResponseEntity.ok(RestResponse.Builder()
-                .result(new ApiPageList<>(user))
                 .status(HttpStatus.OK)
+                .message("پوشه مورد نظر با موفقیت حذف گردید")
+                .result(new ApiPageList<>(folder))
                 .build()
         );
     }

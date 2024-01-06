@@ -1,10 +1,7 @@
 package ir.vcx.data.repository;
 
 import ir.vcx.api.model.Paging;
-import ir.vcx.data.entity.GenreType;
-import ir.vcx.data.entity.VCXContent;
-import ir.vcx.data.entity.VCXFolder;
-import ir.vcx.data.entity.VideoType;
+import ir.vcx.data.entity.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -42,20 +39,23 @@ public class ContentRepository {
         vcxContent.setParentFolder(parentFolder);
         vcxContent.setDescription(description);
         vcxContent.setVideoType(videoType);
-        vcxContent.setGenreType(genreTypes);
+        vcxContent.setGenresType(genreTypes);
 
         currentSession.persist(vcxContent);
 
         return vcxContent;
     }
 
-    public Optional<VCXContent> getContent(String hash) {
+    public Optional<VCXContent> getAvailableContent(String hash) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
         return currentSession.createQuery("SELECT VC FROM VCXContent VC " +
-                        "WHERE VC.hash = :hash", VCXContent.class)
+                        "LEFT JOIN FETCH VC.posters " +
+                        "WHERE VC.hash = :hash " +
+                        "AND VC.active = :val ", VCXContent.class)
                 .setParameter("hash", hash)
+                .setParameter("val", Boolean.TRUE)
                 .uniqueResultOptional();
 
     }
@@ -157,5 +157,18 @@ public class ContentRepository {
         }
 
         return query.getSingleResult();
+    }
+
+    public VCXPoster addPoster(String posterHash, boolean horizontal) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        VCXPoster vcxPoster = new VCXPoster();
+        vcxPoster.setPosterHash(posterHash);
+        vcxPoster.setHorizontal(horizontal);
+
+        currentSession.persist(vcxPoster);
+
+        return vcxPoster;
     }
 }

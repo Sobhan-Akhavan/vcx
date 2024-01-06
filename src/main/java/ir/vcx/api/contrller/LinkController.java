@@ -8,8 +8,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import ir.vcx.api.model.ApiPageList;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.data.entity.VCXLink;
+import ir.vcx.data.mapper.LinkMapper;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.LinkService;
 import ir.vcx.exception.VCXException;
@@ -63,9 +65,11 @@ public class LinkController {
 
         VCXLink uploadLink = linkService.getContentUploadLink(name, season);
 
+        ir.vcx.api.model.VCXLink result = LinkMapper.INSTANCE.entityToApi(uploadLink);
+
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(uploadLink)
+                .result(new ApiPageList<>(result))
                 .build()
         );
     }
@@ -94,9 +98,11 @@ public class LinkController {
 
         VCXLink posterUploadLink = linkService.getPosterUploadLink(hash);
 
+        ir.vcx.api.model.VCXLink vcxLink = LinkMapper.INSTANCE.entityToApi(posterUploadLink);
+
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(posterUploadLink)
+                .result(new ApiPageList<>(vcxLink))
                 .build()
         );
     }

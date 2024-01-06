@@ -28,7 +28,7 @@ public class VCXLink {
     @Column(name = "LINK", nullable = false)
     private String link;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private VCXFolder folder;
 
     @Temporal(TemporalType.TIMESTAMP)

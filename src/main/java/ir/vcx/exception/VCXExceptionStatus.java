@@ -23,6 +23,7 @@ public enum VCXExceptionStatus {
 
     FORBIDDEN(403, "Forbidden", "درخواست دسترسی رد شد"),
     NOT_FOUND(404, "Request not found", "درخواست مورد نظر پیدا نشد"),
+    FOLDER_NOT_FOUND(404, "Folder not found", "پوشه مورد نظر پیدا نشد"),
     CONTENT_NOT_FOUND(404, "Content not found", "محتوایی با این شناسه یافت نشد"),
     PARENT_FOLDER_NOT_FOUND(404, "Parent folder not found", "پوشه مقصد پیدا نشد"),
 

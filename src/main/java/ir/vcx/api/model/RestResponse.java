@@ -13,7 +13,7 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class RestResponse<T> implements VCXApiMode {
+public class RestResponse<T> implements VCXApiModel {
 
     private Integer status;
     private String error;

@@ -4,18 +4,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
 @NoArgsConstructor
-public class ApiPageList<T> implements VCXApiMode {
+public class ApiPageList<T> implements VCXApiModel {
 
-    private List<T> list;
+    private Object entity;
+    private Set<T> set;
     private Long count;
 
-    public ApiPageList(List<T> list, Long count) {
-        this.list = list;
+    public ApiPageList(Object entity) {
+        this.entity = entity;
+    }
+
+    public ApiPageList(Set<T> set, Long count) {
+        this.set = set;
         this.count = count;
     }
 

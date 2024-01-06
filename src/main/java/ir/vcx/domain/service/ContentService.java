@@ -1,10 +1,7 @@
 package ir.vcx.domain.service;
 
 import ir.vcx.api.model.Paging;
-import ir.vcx.data.entity.GenreType;
-import ir.vcx.data.entity.VCXContent;
-import ir.vcx.data.entity.VCXFolder;
-import ir.vcx.data.entity.VideoType;
+import ir.vcx.data.entity.*;
 import ir.vcx.data.repository.ContentRepository;
 import ir.vcx.data.repository.FolderRepository;
 import ir.vcx.domain.model.space.EntityDetail;
@@ -61,16 +58,16 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent getContent(String hash) throws VCXException {
+    public VCXContent getAvailableContent(String hash) throws VCXException {
 
-        return contentRepository.getContent(hash)
+        return contentRepository.getAvailableContent(hash)
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.CONTENT_NOT_FOUND));
     }
 
     @Transactional
     public VCXContent updateContent(String hash, String name, String description, Set<GenreType> genreTypes) throws VCXException {
 
-        VCXContent vcxContent = getContent(hash);
+        VCXContent vcxContent = getAvailableContent(hash);
 
         if (StringUtils.isNotBlank(name)) {
             vcxContent.setName(name);
@@ -81,7 +78,7 @@ public class ContentService {
         }
 
         if (!genreTypes.isEmpty()) {
-            vcxContent.setGenreType(genreTypes);
+            vcxContent.setGenresType(genreTypes);
         }
 
 
@@ -113,14 +110,16 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent addPoster(String hash, String posterHash) throws VCXException {
-        VCXContent content = getContent(hash);
+    public VCXContent addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
+        VCXContent content = getAvailableContent(hash);
 
         checkFileOwnerValidation(posterHash);
 
-        content.setPosterHash(posterHash);
+        VCXPoster vcxPoster = contentRepository.addPoster(posterHash, horizontal);
 
-        return content;
+        content.getPosters().add(vcxPoster);
+
+        return contentRepository.updateContent(content);
     }
 
     private void checkFileOwnerValidation(String hash) throws VCXException {
@@ -130,5 +129,16 @@ public class ContentService {
         if (entityDetail.getOwner().getSsoId() != 98878) {
             throw new VCXException(VCXExceptionStatus.UNAUTHORIZED);
         }
+    }
+
+    @Transactional
+    public VCXContent deleteContent(String hash) throws VCXException {
+        VCXContent vcxContent = getAvailableContent(hash);
+
+        podSpaceUtil.wipeEntity(vcxContent.getHash());
+
+        vcxContent.setActive(Boolean.FALSE);
+
+        return contentRepository.updateContent(vcxContent);
     }
 }

@@ -10,33 +10,23 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.util.Date;
 
-/**
- * Created by Sobhan on 11/23/2023 - VCX
- */
-
 @Entity
-@Table(name = "VCX_FOLDER")
+@Table(name = "VCX_POSTER")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class VCXFolder {
+public class VCXPoster {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "NAME", nullable = false)
-    private String name;
+    @Column(name = "POSTER_HASH", unique = true, nullable = false)
+    private String posterHash;
 
-    @Column(name = "HASH", nullable = false)
-    private String hash;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    private VCXFolder parent;
-
-    @Column(name = "ACTIVE", nullable = false)
-    private Boolean active = Boolean.TRUE;
+    @Column(name = "HORIZONTAL", unique = true, nullable = false)
+    private Boolean horizontal;
 
     @Version
     @Column(name = "OPTLOCK", nullable = false)

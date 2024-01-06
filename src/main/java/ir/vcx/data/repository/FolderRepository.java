@@ -26,13 +26,15 @@ public class FolderRepository {
 
 
     @Transactional
-    public Optional<VCXFolder> getFolderByName(String name) {
+    public Optional<VCXFolder> getAvailableFolderByName(String name) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
         return currentSession.createQuery("SELECT VF FROM VCXFolder VF " +
-                        "WHERE UPPER(VF.name) = :name", VCXFolder.class)
+                        "WHERE UPPER(VF.name) = :name " +
+                        "AND VF.active = :val", VCXFolder.class)
                 .setParameter("name", name.toUpperCase())
+                .setParameter("val", Boolean.FALSE)
                 .uniqueResultOptional();
 
     }
@@ -50,7 +52,7 @@ public class FolderRepository {
     }
 
     @Transactional
-    public Optional<VCXFolder> getFolderByName(String name, VCXFolder parent) {
+    public Optional<VCXFolder> getAvailableFolderByName(String name, VCXFolder parent) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
@@ -76,5 +78,14 @@ public class FolderRepository {
         currentSession.persist(vcxFolder);
 
         return vcxFolder;
+    }
+
+    public VCXFolder updateFolder(VCXFolder contentFolder) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        currentSession.merge(contentFolder);
+
+        return contentFolder;
     }
 }
