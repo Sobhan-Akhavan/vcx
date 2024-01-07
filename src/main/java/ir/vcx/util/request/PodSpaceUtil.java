@@ -1,10 +1,7 @@
 package ir.vcx.util.request;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import ir.vcx.domain.model.space.EntityDetail;
-import ir.vcx.domain.model.space.Folder;
-import ir.vcx.domain.model.space.SpaceResponse;
-import ir.vcx.domain.model.space.UploadLink;
+import ir.vcx.domain.model.space.*;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
 import ir.vcx.util.DateUtil;
@@ -16,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -178,6 +176,36 @@ public class PodSpaceUtil {
             throw new VCXException(VCXExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
         }
     }
+
+    public SpaceResponse<Share> publicShareEntity(String entityHash) throws VCXException {
+        SpaceResponse<Share> result;
+        try {
+            result = webClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .scheme(PODSPACE_SCHEME)
+                            .host(PODSPACE_HOST)
+                            .port(PODSPACE_PORT)
+                            .path("/api/files/{hash}/public")
+                            .queryParam("expiration", DateUtil.futureTime(DateUtil.TimeInFuture.OneHundredYears).getTime())
+                            .queryParam("access", Arrays.asList("DOWNLOAD", "VIEW"))
+                            .build(entityHash))
+                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<Share>>() {
+                    })
+                    .block();
+        } catch (WebClientResponseException e) {
+            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<SpaceResponse<Share>>() {
+            });
+            throw new VCXException(result.getStatus(), result.getError(), result.getMessage());
+        } catch (Exception e) {
+            log.error("Unknown error while public share entity", e);
+            throw new VCXException(VCXExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
+        }
+        return result;
+    }
+
+
 //
 //    public SpaceResponse<UserGroup> createUserGroup(Set<Long> ssoId, String destFolderHash) throws ArchiveException {
 //        SpaceResponse<UserGroup> result;

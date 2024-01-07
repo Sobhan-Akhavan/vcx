@@ -5,6 +5,7 @@ import ir.vcx.data.entity.*;
 import ir.vcx.data.repository.ContentRepository;
 import ir.vcx.data.repository.FolderRepository;
 import ir.vcx.domain.model.space.EntityDetail;
+import ir.vcx.domain.model.space.Share;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
 import ir.vcx.util.request.PodSpaceUtil;
@@ -118,6 +119,9 @@ public class ContentService {
         VCXPoster vcxPoster = contentRepository.addPoster(posterHash, horizontal);
 
         content.getPosters().add(vcxPoster);
+
+        Share share = podSpaceUtil.publicShareEntity(posterHash)
+                .getResult();
 
         return contentRepository.updateContent(content);
     }

@@ -41,8 +41,10 @@ public class DateUtil {
     public enum TimeInFuture {
 
         OneDay(1),
-        OneWeek(7);
+        OneWeek(7),
+        OneHundredYears(365 * 100),
 
+        ;
 
         private final int time;
     }
