@@ -73,7 +73,7 @@ public class ContentController {
             @RequestParam(name = "description")
             @Parameter(description = "description of video", required = true)
             String description,
-            @RequestParam(name = "videType")
+            @RequestParam(name = "videoType")
             @Parameter(description = "type of video", required = true)
             VideoType videoType,
             @RequestParam(name = "genreType")
