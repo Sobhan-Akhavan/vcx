@@ -25,7 +25,7 @@ public class VCXPoster {
     @Column(name = "POSTER_HASH", unique = true, nullable = false)
     private String posterHash;
 
-    @Column(name = "HORIZONTAL", unique = true, nullable = false)
+    @Column(name = "HORIZONTAL", nullable = false)
     private Boolean horizontal;
 
     @Version

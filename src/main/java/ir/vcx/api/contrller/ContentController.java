@@ -14,8 +14,10 @@ import ir.vcx.api.model.Paging;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.data.entity.GenreType;
 import ir.vcx.data.entity.VCXContent;
+import ir.vcx.data.entity.VCXPoster;
 import ir.vcx.data.entity.VideoType;
 import ir.vcx.data.mapper.ContentMapper;
+import ir.vcx.data.mapper.PosterMapper;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.ContentService;
 import ir.vcx.exception.VCXException;
@@ -115,7 +117,7 @@ public class ContentController {
             String hash
     ) throws VCXException {
 
-        VCXContent vcxContent = contentService.getAvailableContent(hash);
+        VCXContent vcxContent = contentService.getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
 
         ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
 
@@ -287,13 +289,13 @@ public class ContentController {
             boolean horizontal
     ) throws VCXException {
 
-        VCXContent vcxContent = contentService.addPoster(hash, posterHash, horizontal);
+        VCXPoster vcxPoster = contentService.addPoster(hash, posterHash, horizontal);
 
-        ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
+        ir.vcx.api.model.VCXPoster poster = PosterMapper.INSTANCE.entityToApi(vcxPoster);
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(new ApiPageList<>(content))
+                .result(new ApiPageList<>(poster))
                 .build()
         );
     }

@@ -5,7 +5,6 @@ import ir.vcx.data.entity.*;
 import ir.vcx.data.repository.ContentRepository;
 import ir.vcx.data.repository.FolderRepository;
 import ir.vcx.domain.model.space.EntityDetail;
-import ir.vcx.domain.model.space.Share;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
 import ir.vcx.util.request.PodSpaceUtil;
@@ -59,16 +58,16 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent getAvailableContent(String hash) throws VCXException {
+    public VCXContent getAvailableContent(String hash, boolean needGenreType, boolean needPoster, boolean needParentFolder) throws VCXException {
 
-        return contentRepository.getAvailableContent(hash)
+        return contentRepository.getAvailableContent(hash, needGenreType, needPoster, needParentFolder)
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.CONTENT_NOT_FOUND));
     }
 
     @Transactional
     public VCXContent updateContent(String hash, String name, String description, Set<GenreType> genreTypes) throws VCXException {
 
-        VCXContent vcxContent = getAvailableContent(hash);
+        VCXContent vcxContent = getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
 
         if (StringUtils.isNotBlank(name)) {
             vcxContent.setName(name);
@@ -111,8 +110,8 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
-        VCXContent content = getAvailableContent(hash);
+    public VCXPoster addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
+        VCXContent content = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
 
         checkFileOwnerValidation(posterHash);
 
@@ -120,10 +119,11 @@ public class ContentService {
 
         content.getPosters().add(vcxPoster);
 
-        Share share = podSpaceUtil.publicShareEntity(posterHash)
-                .getResult();
+        podSpaceUtil.publicShareEntity(posterHash);
 
-        return contentRepository.updateContent(content);
+        contentRepository.updateContent(content);
+
+        return vcxPoster;
     }
 
     private void checkFileOwnerValidation(String hash) throws VCXException {
@@ -137,7 +137,7 @@ public class ContentService {
 
     @Transactional
     public VCXContent deleteContent(String hash) throws VCXException {
-        VCXContent vcxContent = getAvailableContent(hash);
+        VCXContent vcxContent = getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
 
         podSpaceUtil.wipeEntity(vcxContent.getHash());
 

@@ -46,14 +46,28 @@ public class ContentRepository {
         return vcxContent;
     }
 
-    public Optional<VCXContent> getAvailableContent(String hash) {
+    public Optional<VCXContent> getAvailableContent(String hash, boolean needGenreType, boolean needPoster, boolean needParentFolder) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
-        return currentSession.createQuery("SELECT VC FROM VCXContent VC " +
-                        "LEFT JOIN FETCH VC.posters " +
-                        "WHERE VC.hash = :hash " +
-                        "AND VC.active = :val ", VCXContent.class)
+        StringBuilder stringQuery = new StringBuilder("SELECT VC FROM VCXContent VC ");
+
+        if (needGenreType) {
+            stringQuery.append("LEFT JOIN FETCH VC.genresType VCG ");
+        }
+
+        if (needPoster) {
+            stringQuery.append("LEFT JOIN FETCH VC.posters VCP ");
+        }
+
+        if (needParentFolder) {
+            stringQuery.append("LEFT JOIN FETCH VC.parentFolder VCPF ");
+        }
+
+        stringQuery.append("WHERE VC.hash = :hash ");
+        stringQuery.append("AND VC.active = :val");
+
+        return currentSession.createQuery(stringQuery.toString(), VCXContent.class)
                 .setParameter("hash", hash)
                 .setParameter("val", Boolean.TRUE)
                 .uniqueResultOptional();
