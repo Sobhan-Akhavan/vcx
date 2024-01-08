@@ -10,6 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum VCXExceptionStatus {
     INVALID_REQUEST(400, "Invalid request", "درخواست معتبر نمی‌باشد"),
+    POSTER_HASH_EXIST(400, "Poster hash exist", "شناسه پوستر تکراری می‌باشد"),
     REQUEST_REJECTED(400, "Request rejected", "درخواست شامل کاراکتر های مخرب است"),
     SSO_INVALID_REQUEST(400, "SSO Invalid Code Request", "کد تایید اشتباه می باشد و یا زمان استفاده از آن به اتمام رسیده است"),
     INVALID_REDIRECT_URI(400, "Invalid Redirect Uri", "درخواست معتبر نمی‌باشد"),

@@ -111,13 +111,19 @@ public class ContentService {
 
     @Transactional
     public VCXPoster addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
-        VCXContent content = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+        VCXContent content = getAvailableContent(hash, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE);
 
         checkFileOwnerValidation(posterHash);
 
+        Set<VCXPoster> posters = content.getPosters();
+
+        if (posters.stream().anyMatch(vcxPoster -> vcxPoster.getPosterHash().equals(posterHash))) {
+            throw new VCXException(VCXExceptionStatus.POSTER_HASH_EXIST);
+        }
+
         VCXPoster vcxPoster = contentRepository.addPoster(posterHash, horizontal);
 
-        content.getPosters().add(vcxPoster);
+        posters.add(vcxPoster);
 
         podSpaceUtil.publicShareEntity(posterHash);
 

@@ -275,7 +275,7 @@ public class ContentController {
                     content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = RestResponse.class))}),
     })
-    @PutMapping("/{hash}/poster/{posterHash}")
+    @PutMapping("/{hash}/posters/{posterHash}")
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<?> addPoster(
             @PathVariable(name = "hash")
