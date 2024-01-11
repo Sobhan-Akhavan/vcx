@@ -205,165 +205,30 @@ public class PodSpaceUtil {
         return result;
     }
 
-
-//
-//    public SpaceResponse<UserGroup> createUserGroup(Set<Long> ssoId, String destFolderHash) throws ArchiveException {
-//        SpaceResponse<UserGroup> result;
-//        try {
-//            result = webClient.post()
-//                    .uri(uriBuilder -> uriBuilder
-//                            .scheme(PODSPACE_SCHEME)
-//                            .host(PODSPACE_HOST)
-//                            .port(PODSPACE_PORT)
-//                            .path("/api/usergroups")
-//                            .queryParam("ssoId", ssoId)
-//                            .queryParam("destFolderHash", destFolderHash)
-//                            .queryParam("allowMemberShare", "false")
-//                            .build())
-//                    .header("Authorization", "Bearer " + API_TOKEN)
-//                    .retrieve()
-//                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<UserGroup>>() {
-//                    })
-//                    .block();
-//        } catch (WebClientResponseException e) {
-//            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<>() {
-//            });
-//            throw new ArchiveException(result.getStatus(), result.getError(), result.getMessage());
-//        } catch (Exception e) {
-//            log.error("Unknown error while create userGroup", e);
-//            throw new ArchiveException(ArchiveExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
-//        }
-//        return result;
-//    }
-//
-//    public SpaceResponse<UserGroup> getUserGroup(String userGroupHash) throws ArchiveException {
-//        SpaceResponse<UserGroup> result;
-//        try {
-//            result = webClient.post()
-//                    .uri(uriBuilder -> uriBuilder
-//                            .scheme(PODSPACE_SCHEME)
-//                            .host(PODSPACE_HOST)
-//                            .port(PODSPACE_PORT)
-//                            .path("/api/usergroups/{userGroupHash}")
-//                            .build(userGroupHash))
-//                    .header("Authorization", "Bearer " + API_TOKEN)
-//                    .retrieve()
-//                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<UserGroup>>() {
-//                    })
-//                    .block();
-//        } catch (WebClientResponseException e) {
-//            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<>() {
-//            });
-//            throw new ArchiveException(result.getStatus(), result.getError(), result.getMessage());
-//        } catch (Exception e) {
-//            log.error("Unknown error while get userGroup", e);
-//            throw new ArchiveException(ArchiveExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
-//        }
-//        return result;
-//    }
-//
-//    public SpaceResponse<DownloadLinkInfo> shareEntityToUserGroup(String userGroupHash, String fileHash) throws ArchiveException {
-//        SpaceResponse<DownloadLinkInfo> result;
-//        try {
-//            result = webClient.put()
-//                    .uri(uriBuilder -> uriBuilder
-//                            .scheme(PODSPACE_SCHEME)
-//                            .host(PODSPACE_HOST)
-//                            .port(PODSPACE_PORT)
-//                            .path("/api/usergroups/{userGroupHash}/files/{fileHash}/share")
-//                            .build(userGroupHash, fileHash))
-//                    .header("Authorization", "Bearer " + API_TOKEN)
-//                    .retrieve()
-//                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<DownloadLinkInfo>>() {
-//                    })
-//                    .block();
-//        } catch (WebClientResponseException e) {
-//            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<>() {
-//            });
-//            throw new ArchiveException(result.getStatus(), result.getError(), result.getMessage());
-//        } catch (Exception e) {
-//            log.error("Unknown error while share file to userGroup", e);
-//            throw new ArchiveException(ArchiveExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
-//        }
-//        return result;
-//    }
-//
-//    public void addUserToUserGroup(String userGroupHash, long ssoId) throws ArchiveException {
-//        SpaceResponse<Object> result;
-//        try {
-//            webClient.post()
-//                    .uri(uriBuilder -> uriBuilder
-//                            .scheme(PODSPACE_SCHEME)
-//                            .host(PODSPACE_HOST)
-//                            .port(PODSPACE_PORT)
-//                            .path("/api/usergroups/{userGroupHash}/users")
-//                            .queryParam("ssoId", ssoId)
-//                            .build(userGroupHash))
-//                    .header("Authorization", "Bearer " + API_TOKEN)
-//                    .retrieve()
-//                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<Object>>() {
-//                    })
-//                    .block();
-//        } catch (WebClientResponseException e) {
-//            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<>() {
-//            });
-//            throw new ArchiveException(result.getStatus(), result.getError(), result.getMessage());
-//        } catch (Exception e) {
-//            log.error("Unknown error while add user to userGroup", e);
-//            throw new ArchiveException(ArchiveExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
-//        }
-//    }
-//
-//    public void removeUserGroup(String userGroupHash) throws ArchiveException {
-//        SpaceResponse<Object> result;
-//        try {
-//            webClient.delete()
-//                    .uri(uriBuilder -> uriBuilder
-//                            .scheme(PODSPACE_SCHEME)
-//                            .host(PODSPACE_HOST)
-//                            .port(PODSPACE_PORT)
-//                            .path("/api/usergroups/{userGroupHash}")
-//                            .build(userGroupHash))
-//                    .header("Authorization", "Bearer " + API_TOKEN)
-//                    .retrieve()
-//                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<Object>>() {
-//                    })
-//                    .block();
-//        } catch (WebClientResponseException e) {
-//            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<>() {
-//            });
-//            throw new ArchiveException(result.getStatus(), result.getError(), result.getMessage());
-//        } catch (Exception e) {
-//            log.error("Unknown error while delete userGroup", e);
-//            throw new ArchiveException(ArchiveExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
-//        }
-//    }
-//
-//    public void removeUserFromUserGroup(String userGroupHash, long ssoId) throws ArchiveException {
-//        SpaceResponse<Object> result;
-//        try {
-//            webClient.delete()
-//                    .uri(uriBuilder -> uriBuilder
-//                            .scheme(PODSPACE_SCHEME)
-//                            .host(PODSPACE_HOST)
-//                            .port(PODSPACE_PORT)
-//                            .path("/api/usergroups/{userGroupHash}/users")
-//                            .queryParam("ssoId", ssoId)
-//                            .build(userGroupHash))
-//                    .header("Authorization", "Bearer " + API_TOKEN)
-//                    .retrieve()
-//                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<Object>>() {
-//                    })
-//                    .block();
-//        } catch (WebClientResponseException e) {
-//            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<>() {
-//            });
-//            throw new ArchiveException(result.getStatus(), result.getError(), result.getMessage());
-//        } catch (Exception e) {
-//            log.error("Unknown error while remove user from userGroup", e);
-//            throw new ArchiveException(ArchiveExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
-//        }
-//    }
-//
-
+    public SpaceResponse<DownloadLink> getDownloadLink(String hash) throws VCXException {
+        SpaceResponse<DownloadLink> result;
+        try {
+            result = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .scheme(PODSPACE_SCHEME)
+                            .host(PODSPACE_HOST)
+                            .port(PODSPACE_PORT)
+                            .path("/api/links/files/{fileHash}")
+                            .queryParam("revokeAbility", Boolean.TRUE)
+                            .build(hash))
+                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<DownloadLink>>() {
+                    })
+                    .block();
+        } catch (WebClientResponseException e) {
+            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<SpaceResponse<DownloadLink>>() {
+            });
+            throw new VCXException(result.getStatus(), result.getError(), result.getMessage());
+        } catch (Exception e) {
+            log.error("Unknown error while get download link", e);
+            throw new VCXException(VCXExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
+        }
+        return result;
+    }
 }

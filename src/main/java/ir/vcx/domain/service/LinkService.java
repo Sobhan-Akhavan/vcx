@@ -1,10 +1,8 @@
 package ir.vcx.domain.service;
 
-import ir.vcx.data.entity.VCXContent;
-import ir.vcx.data.entity.VCXFolder;
-import ir.vcx.data.entity.VCXLink;
-import ir.vcx.data.entity.VideoType;
+import ir.vcx.data.entity.*;
 import ir.vcx.data.repository.LinkRepository;
+import ir.vcx.domain.model.space.DownloadLink;
 import ir.vcx.domain.model.space.UploadLink;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
@@ -74,5 +72,22 @@ public class LinkService {
 
         return linkRepository.getUploadLink(content.getParentFolder())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.INVALID_REQUEST));
+    }
+
+    @Transactional
+    public VCXDownloadLink getContentDownloadLink(String hash) throws VCXException {
+        VCXContent vcxContent = contentService.getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+
+        return linkRepository.getDownloadLink(vcxContent)
+                .orElseGet(() -> {
+                    try {
+                        DownloadLink downloadLink = podSpaceUtil.getDownloadLink(hash).getResult();
+
+                        return linkRepository.addDownloadLink(downloadLink, vcxContent);
+                    } catch (VCXException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                });
     }
 }

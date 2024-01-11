@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DownloadLinkInfo {
+public class DownloadLink {
     private String userGroupHash;
     private String fileHash;
     private String fileName;

@@ -1,7 +1,10 @@
 package ir.vcx.data.repository;
 
+import ir.vcx.data.entity.VCXContent;
+import ir.vcx.data.entity.VCXDownloadLink;
 import ir.vcx.data.entity.VCXFolder;
 import ir.vcx.data.entity.VCXLink;
+import ir.vcx.domain.model.space.DownloadLink;
 import ir.vcx.domain.model.space.UploadLink;
 import ir.vcx.util.DateUtil;
 import org.hibernate.Session;
@@ -60,5 +63,35 @@ public class LinkRepository {
         currentSession.persist(vcxLink);
 
         return vcxLink;
+    }
+
+    public Optional<VCXDownloadLink> getDownloadLink(VCXContent vcxContent) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT VDL FROM VCXDownloadLink VDL " +
+                        "WHERE VDL.content = :content " +
+                        "AND VDL.expiration > :exp " +
+                        "AND VDL.active = :active", VCXDownloadLink.class)
+                .setParameter("content", vcxContent)
+                .setParameter("exp", DateUtil.getNowDate())
+                .setParameter("active", Boolean.TRUE)
+                .uniqueResultOptional();
+
+    }
+
+    public VCXDownloadLink addDownloadLink(DownloadLink downloadLink, VCXContent vcxContent) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        VCXDownloadLink vcxDownloadLink = new VCXDownloadLink();
+        vcxDownloadLink.setLink(downloadLink.getDownloadLink());
+        vcxDownloadLink.setContent(vcxContent);
+        vcxDownloadLink.setExpiration(DateUtil.epochToDate(downloadLink.getExpiration()));
+        vcxDownloadLink.setActive(Boolean.TRUE);
+
+        currentSession.persist(vcxDownloadLink);
+
+        return vcxDownloadLink;
     }
 }
