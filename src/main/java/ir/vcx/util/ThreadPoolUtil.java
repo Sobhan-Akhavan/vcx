@@ -9,9 +9,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class ThreadPoolUtil {
 
-    @Bean
-    public ThreadPoolExecutor threadPoolFactory() {
-        return (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+    @Bean(value = "contentThreadPool")
+    public ThreadPoolExecutor threadPoolFactory1() {
+        return (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
+    }
+
+    @Bean(value = "planThreadPool")
+    public ThreadPoolExecutor threadPoolFactory2() {
+        return (ThreadPoolExecutor) Executors.newFixedThreadPool(6);
     }
 
 }

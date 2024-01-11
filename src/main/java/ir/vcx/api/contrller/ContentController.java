@@ -251,7 +251,10 @@ public class ContentController {
 
         Pair<List<VCXContent>, Long> contents = contentService.getContents(name, videoType, genreTypes, paging);
 
-        Set<ir.vcx.api.model.VCXContent> contentList = contents.getKey().stream().map(ContentMapper.INSTANCE::entityToApi).collect(Collectors.toSet());
+        List<ir.vcx.api.model.VCXContent> contentList = contents.getKey()
+                .stream()
+                .map(ContentMapper.INSTANCE::entityToApi)
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)

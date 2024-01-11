@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -32,14 +33,15 @@ public class ContentService {
     private final FolderRepository folderRepository;
     private final ContentRepository contentRepository;
     private final PodSpaceUtil podSpaceUtil;
-    private final ThreadPoolExecutor threadPoolFactory;
+    private final ThreadPoolExecutor threadPoolExecutor;
 
     @Autowired
-    public ContentService(FolderRepository folderRepository, ContentRepository contentRepository, PodSpaceUtil podSpaceUtil, ThreadPoolExecutor threadPoolFactory) {
+    public ContentService(FolderRepository folderRepository, ContentRepository contentRepository, PodSpaceUtil podSpaceUtil,
+                          @Qualifier(value = "contentThreadPool") ThreadPoolExecutor threadPoolExecutor) {
         this.folderRepository = folderRepository;
         this.contentRepository = contentRepository;
         this.podSpaceUtil = podSpaceUtil;
-        this.threadPoolFactory = threadPoolFactory;
+        this.threadPoolExecutor = threadPoolExecutor;
     }
 
     @Transactional
@@ -92,9 +94,9 @@ public class ContentService {
             throw new VCXException(VCXExceptionStatus.INVALID_NAME_VALUE_LENGTH);
         }
 
-        Future<List<VCXContent>> getContentsThread = threadPoolFactory.submit(() -> contentRepository.getContents(name, videoType, genreTypes, paging));
+        Future<List<VCXContent>> getContentsThread = threadPoolExecutor.submit(() -> contentRepository.getContents(name, videoType, genreTypes, paging));
 
-        Future<Long> getContentsCountThread = threadPoolFactory.submit(() -> contentRepository.getContentsCount(name, videoType, genreTypes));
+        Future<Long> getContentsCountThread = threadPoolExecutor.submit(() -> contentRepository.getContentsCount(name, videoType, genreTypes));
 
         try {
             List<VCXContent> contents = getContentsThread.get();
