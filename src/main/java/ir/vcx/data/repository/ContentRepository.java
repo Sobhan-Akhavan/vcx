@@ -85,13 +85,19 @@ public class ContentRepository {
     }
 
     @Transactional
-    public List<VCXContent> getContents(String name, VideoType videoType, Set<GenreType> genreTypes, Paging paging) {
+    public List<VCXContent> getContents(String name, VideoType videoType, Set<GenreType> genreTypes, boolean includePosterLessContent, Paging paging) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
         StringBuilder stringQuery = new StringBuilder("SELECT VC FROM VCXContent VC ");
 
-        stringQuery.append("INNER JOIN FETCH VC.genreType VCG ");
+        if (includePosterLessContent) {
+            stringQuery.append("LEFT JOIN FETCH VC.genresType VCG ");
+            stringQuery.append("LEFT JOIN FETCH VC.posters VCP ");
+        } else {
+            stringQuery.append("INNER JOIN FETCH VC.genresType VCG ");
+            stringQuery.append("INNER JOIN FETCH VC.posters VCP ");
+        }
 
         boolean isWhereClauseAdded = false;
         if (StringUtils.isNotBlank(name)) {
@@ -109,8 +115,8 @@ public class ContentRepository {
             stringQuery.append("VCG IN :genreTypes ");
         }
 
-        stringQuery.append("ORDER BY ").append(paging.getOrder()).append(" ")
-                .append((paging.isDesc() ? "desc" : "asc"));
+        stringQuery.append("ORDER BY VC.").append(paging.getOrder().getValue()).append(" ")
+                .append((paging.isDesc() ? "DESC" : "ASC"));
 
         Query<VCXContent> query = currentSession.createQuery(stringQuery.toString(), VCXContent.class);
 
@@ -133,12 +139,17 @@ public class ContentRepository {
     }
 
     @Transactional
-    public Long getContentsCount(String name, VideoType videoType, Set<GenreType> genreTypes) {
+    public Long getContentsCount(String name, VideoType videoType, Set<GenreType> genreTypes, boolean includePosterLessContent) {
         Session currentSession = sessionFactory.getCurrentSession();
+
 
         StringBuilder stringQuery = new StringBuilder("SELECT COUNT(VC) FROM VCXContent VC ");
 
-        stringQuery.append("INNER JOIN VC.genreType VCG ");
+        if (includePosterLessContent) {
+            stringQuery.append("LEFT JOIN VC.genresType VCG ");
+        } else {
+            stringQuery.append("INNER JOIN VC.genresType VCG ");
+        }
 
         boolean isWhereClauseAdded = false;
         if (StringUtils.isNotBlank(name)) {

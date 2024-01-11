@@ -1,7 +1,16 @@
 package ir.vcx.api.model;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+
+@Getter
+@AllArgsConstructor
 public enum Order {
-    CREATED,
-    UPDATED
+    CREATED("created"),
+    UPDATED("updated");
+
+
+    private final String value;
 }

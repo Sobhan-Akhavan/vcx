@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Report")
+@Tag(name = "Report Controller")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/reports")
 @SecurityRequirement(name = "Bearer")

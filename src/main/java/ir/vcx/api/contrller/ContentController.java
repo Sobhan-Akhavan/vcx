@@ -28,7 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * Created by Sobhan on 11/23/2023 - VCX
  */
 
-@Tag(name = "Content Management")
+@Tag(name = "Content Controller")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/contents")
 @RestController
@@ -225,12 +225,15 @@ public class ContentController {
             @RequestParam(name = "name", required = false)
             @Parameter(description = "name of videos (must be 3 character minimum)")
             String name,
-            @RequestParam(name = "videType", required = false)
+            @RequestParam(name = "videoType", required = false)
             @Parameter(description = "type of video")
             VideoType videoType,
             @RequestParam(name = "genreType", required = false)
             @Parameter(description = "type of genres")
             Set<GenreType> genreTypes,
+            @RequestParam(name = "includePosterLessContent", defaultValue = "FALSE")
+            @Parameter(description = "maybe contents return without poster", schema = @Schema(defaultValue = "FALSE", allowableValues = {"FALSE", "TRUE"}), required = true)
+            boolean includePosterLessContent,
             @RequestParam(value = "start", defaultValue = "0")
             @Parameter(description = "offset of pagination", schema = @Schema(defaultValue = "0", minimum = "0"), required = true)
             int start,
@@ -240,16 +243,17 @@ public class ContentController {
             @RequestParam(name = "order", defaultValue = "UPDATED")
             @Parameter(description = "sort result by", schema = @Schema(defaultValue = "UPDATED", allowableValues = {"CREATED", "UPDATED"}), required = true)
             Order order,
-            @RequestParam(name = "desc", defaultValue = "false")
+            @RequestParam(name = "desc", defaultValue = "FALSE")
             @Parameter(description = "sort returned items ascending or descending", schema = @Schema(defaultValue = "FALSE", allowableValues = {"FALSE", "TRUE"}), required = true)
             boolean desc
     ) throws VCXException {
 
-        Paging.checkOrder(new HashSet<>(Collections.singleton(Order.CREATED)), order);
+
+        Paging.checkOrder(new HashSet<>(Arrays.asList(Order.CREATED, Order.UPDATED)), order);
 
         Paging paging = new Paging(start, size, order, desc);
 
-        Pair<List<VCXContent>, Long> contents = contentService.getContents(name, videoType, genreTypes, paging);
+        Pair<List<VCXContent>, Long> contents = contentService.getContents(name, videoType, genreTypes, includePosterLessContent, paging);
 
         List<ir.vcx.api.model.VCXContent> contentList = contents.getKey()
                 .stream()

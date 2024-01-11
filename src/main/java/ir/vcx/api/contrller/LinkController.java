@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
  * Created by Sobhan on 11/9/2023 - VCX
  */
 
-@Tag(name = "Link")
+@Tag(name = "Link Controller")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/links")
 @SecurityRequirement(name = "Bearer")

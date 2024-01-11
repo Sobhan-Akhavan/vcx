@@ -22,5 +22,5 @@ public class VCXContent {
     private VCXFolder parentFolder;
     private String description;
     private VideoType videoType;
-    private Set<GenreType> genreType;
+    private Set<GenreType> genresType;
 }

@@ -5,6 +5,7 @@ import ir.vcx.data.repository.PlanRepository;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,7 +30,6 @@ public class PlanService {
         this.threadPoolExecutor = threadPoolExecutor;
     }
 
-    @Transactional
     public Pair<List<VCXPlan>, Long> getPlansList() throws VCXException {
 
         Future<List<VCXPlan>> getPlansListThread = threadPoolExecutor.submit(planRepository::getPlansList);
@@ -46,5 +46,17 @@ public class PlanService {
 
             throw new VCXException(VCXExceptionStatus.UNKNOWN_ERROR);
         }
+    }
+
+    @Transactional
+    public VCXPlan addPlan(String name, VCXPlan.MonthLimit limit, boolean active) throws VCXException {
+
+        planRepository.getPlanByName(name);
+
+        if (StringUtils.isNotBlank(name) && name.length() < 3) {
+            throw new VCXException(VCXExceptionStatus.INVALID_NAME_VALUE_LENGTH);
+        }
+
+        return planRepository.addPlan(name, limit, active);
     }
 }

@@ -21,6 +21,9 @@ public class VCXPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "NAME", nullable = false)
+    private String name;
+
     @Column(name = "HASH", nullable = false)
     private String hash;
 

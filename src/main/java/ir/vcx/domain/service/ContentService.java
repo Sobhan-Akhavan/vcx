@@ -37,7 +37,7 @@ public class ContentService {
 
     @Autowired
     public ContentService(FolderRepository folderRepository, ContentRepository contentRepository, PodSpaceUtil podSpaceUtil,
-                          @Qualifier(value = "contentThreadPool") ThreadPoolExecutor threadPoolExecutor) {
+                          @Qualifier("contentThreadPool") ThreadPoolExecutor threadPoolExecutor) {
         this.folderRepository = folderRepository;
         this.contentRepository = contentRepository;
         this.podSpaceUtil = podSpaceUtil;
@@ -88,15 +88,18 @@ public class ContentService {
     }
 
 
-    public Pair<List<VCXContent>, Long> getContents(String name, VideoType videoType, Set<GenreType> genreTypes, Paging paging) throws VCXException {
+    public Pair<List<VCXContent>, Long> getContents(String name, VideoType videoType, Set<GenreType> genreTypes,
+                                                    boolean includePosterLessContent, Paging paging) throws VCXException {
 
         if (StringUtils.isNotBlank(name) && name.length() < 3) {
             throw new VCXException(VCXExceptionStatus.INVALID_NAME_VALUE_LENGTH);
         }
 
-        Future<List<VCXContent>> getContentsThread = threadPoolExecutor.submit(() -> contentRepository.getContents(name, videoType, genreTypes, paging));
+        Future<List<VCXContent>> getContentsThread = threadPoolExecutor.submit(() ->
+                contentRepository.getContents(name, videoType, genreTypes, includePosterLessContent, paging));
 
-        Future<Long> getContentsCountThread = threadPoolExecutor.submit(() -> contentRepository.getContentsCount(name, videoType, genreTypes));
+        Future<Long> getContentsCountThread = threadPoolExecutor.submit(() ->
+                contentRepository.getContentsCount(name, videoType, genreTypes, includePosterLessContent));
 
         try {
             List<VCXContent> contents = getContentsThread.get();

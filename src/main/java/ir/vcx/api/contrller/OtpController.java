@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
  * Created by Sobhan at 8/10/2023 - VCX
  */
 
-@Tag(name = "Oauth2")
+@Tag(name = "Oauth2 Controller")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/oauth2/otp")
 @RestController

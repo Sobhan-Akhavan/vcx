@@ -1,6 +1,7 @@
 package ir.vcx.api.contrller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,15 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Tag(name = "Report")
+@Tag(name = "Plan Controller")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/plans")
 @SecurityRequirement(name = "Bearer")
@@ -39,6 +37,46 @@ public class PlanController {
     @Autowired
     public PlanController(PlanService planService) {
         this.planService = planService;
+    }
+
+    @Operation(
+            summary = "add plan",
+            description = "add plan"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @PostMapping
+    public ResponseEntity<?> addPlan(
+            @RequestParam(name = "name")
+            @Parameter(description = "plan name", required = true)
+            String name,
+            @RequestParam(name = "limit")
+            @Parameter(description = "month limitation", required = true)
+            VCXPlan.MonthLimit limit,
+            @RequestParam(name = "active", defaultValue = "true")
+            @Parameter(description = "is plan active", required = true)
+            boolean active
+    ) throws VCXException {
+
+        VCXPlan vcxPlan = planService.addPlan(name, limit, active);
+
+        ir.vcx.api.model.VCXPlan result = PlanMapper.INSTANCE.entityToApi(vcxPlan);
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .result(new ApiPageList<>(result))
+                .status(HttpStatus.OK)
+                .build()
+        );
+
     }
 
     @Operation(

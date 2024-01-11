@@ -27,7 +27,7 @@ import java.io.IOException;
  * Created by Sobhan on 11/16/2023 - VCX
  */
 
-@Tag(name = "Oauth2")
+@Tag(name = "Oauth2 Controller")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/oauth2")
 @RestController

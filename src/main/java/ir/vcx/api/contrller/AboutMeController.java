@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Created by Sobhan on 11/16/2023 - VCX
  */
 
-@Tag(name = "Me")
+@Tag(name = "Me Controller")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/me")
 @SecurityRequirement(name = "Bearer")

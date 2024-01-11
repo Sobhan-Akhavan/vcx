@@ -21,7 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Folder Management")
+@Tag(name = "Folder Controller")
 @CrossOrigin("*")
 @RequestMapping("/api/v1/folders")
 @SecurityRequirement(name = "Bearer")
