@@ -24,11 +24,15 @@ public class VCXPlan {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "HASH", nullable = false)
+    @Column(name = "HASH", unique = true, nullable = false)
     private String hash;
 
-    @Column(name = "LIMIT", nullable = false)
-    private MonthLimit limit;
+    @Column(name = "PRICE", nullable = false)
+    private Long price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "MONTH_LIMIT", nullable = false)
+    private MonthLimit monthLimit;
 
     @Column(name = "ACTIVE", nullable = false)
     private Boolean active;
@@ -50,10 +54,10 @@ public class VCXPlan {
     @Getter
     @AllArgsConstructor
     public enum MonthLimit {
-        ONE_MONTH(1),
-        THREE_MONTH(3),
-        SIX_MONTH(6),
-        ONE_YEAR(12);
+        ONE(1),
+        THREE(3),
+        SIX(6),
+        TWELVE(12);
 
         private final int value;
     }

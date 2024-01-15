@@ -13,8 +13,10 @@ import java.util.Date;
 @NoArgsConstructor
 public class VCXPlan {
 
+    private String name;
     private String hash;
-    private ir.vcx.data.entity.VCXPlan.MonthLimit limit;
+    private long price;
+    private ir.vcx.data.entity.VCXPlan.MonthLimit monthLimit;
     private Boolean active;
     private Date created;
     private Date updated;

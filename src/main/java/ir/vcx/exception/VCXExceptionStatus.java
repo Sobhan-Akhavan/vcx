@@ -28,6 +28,8 @@ public enum VCXExceptionStatus {
     CONTENT_NOT_FOUND(404, "Content not found", "محتوایی با این شناسه یافت نشد"),
     PARENT_FOLDER_NOT_FOUND(404, "Parent folder not found", "پوشه مقصد پیدا نشد"),
 
+    PLAN_LIMIT_CONFLICT(409, "Plan limit conflict", "طرح اشتراک فعالی با این محدودیت وجود دارد"),
+
     SSO_CONNECTION_ERROR(500, "SSO Server Connection Error", "ارتباط با سرور SSO با مشکل مواجه شده است"),
 
     PROCESS_REQUEST_ERROR(500, "Process request error", "این امکان در حال حاضر وجود ندارد"),

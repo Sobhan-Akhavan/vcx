@@ -56,18 +56,18 @@ public class PlanController {
     })
     @PostMapping
     public ResponseEntity<?> addPlan(
-            @RequestParam(name = "name")
-            @Parameter(description = "plan name", required = true)
-            String name,
+            @RequestParam(name = "price")
+            @Parameter(description = "price (TOMAN)", required = true)
+            long price,
             @RequestParam(name = "limit")
             @Parameter(description = "month limitation", required = true)
             VCXPlan.MonthLimit limit,
-            @RequestParam(name = "active", defaultValue = "true")
-            @Parameter(description = "is plan active", required = true)
+            @RequestParam(name = "active", defaultValue = "TRUE")
+            @Parameter(description = "is plan active", schema = @Schema(defaultValue = "TRUE", allowableValues = {"TRUE", "FALSE"}), required = true)
             boolean active
     ) throws VCXException {
 
-        VCXPlan vcxPlan = planService.addPlan(name, limit, active);
+        VCXPlan vcxPlan = planService.addPlan(price, limit, active);
 
         ir.vcx.api.model.VCXPlan result = PlanMapper.INSTANCE.entityToApi(vcxPlan);
 
@@ -107,6 +107,35 @@ public class PlanController {
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .result(new ApiPageList<>(contentList, plansList.getValue()))
+                .status(HttpStatus.OK)
+                .build()
+        );
+
+    }
+
+    @Operation(
+            summary = "deactivate all plans",
+            description = "deactivate all plans"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @DeleteMapping
+    public ResponseEntity<?> deactivatePlans(
+    ) throws VCXException {
+
+        planService.deactivatePlans();
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .message("تمامی طرح‌های اشتراک با موفقیت غیر فعال گردیدند")
                 .status(HttpStatus.OK)
                 .build()
         );
