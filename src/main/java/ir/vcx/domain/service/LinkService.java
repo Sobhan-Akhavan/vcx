@@ -50,6 +50,17 @@ public class LinkService {
 
         VCXFolder contentFolder = folderService.getOrCreateFolder(name, season, videoType);
 
+        return getVcxUploadLink(contentFolder);
+    }
+
+    @Transactional
+    public VCXLink getPosterUploadLink(String hash) throws VCXException {
+        VCXContent content = contentService.getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+
+        return getVcxUploadLink(content.getParentFolder());
+    }
+
+    private VCXLink getVcxUploadLink(VCXFolder contentFolder) {
         return linkRepository.getUploadLink(contentFolder)
                 .orElseGet(() -> {
                     try {
@@ -64,14 +75,6 @@ public class LinkService {
                         throw new RuntimeException(e);
                     }
                 });
-    }
-
-    @Transactional
-    public VCXLink getPosterUploadLink(String hash) throws VCXException {
-        VCXContent content = contentService.getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
-
-        return linkRepository.getUploadLink(content.getParentFolder())
-                .orElseThrow(() -> new VCXException(VCXExceptionStatus.INVALID_REQUEST));
     }
 
     @Transactional

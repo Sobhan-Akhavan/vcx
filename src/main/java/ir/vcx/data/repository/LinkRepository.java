@@ -34,19 +34,11 @@ public class LinkRepository {
 
         return currentSession.createQuery("SELECT VL FROM VCXLink VL " +
                         "WHERE VL.folder = :folder " +
+                        "AND VL.expiration > :exp " +
                         "AND VL.active = :active", VCXLink.class)
                 .setParameter("folder", contentFolder)
+                .setParameter("exp", DateUtil.getNowDate())
                 .setParameter("active", Boolean.TRUE)
-                .uniqueResultOptional();
-    }
-
-    public Optional<VCXLink> getUploadLink(String uploadLink) {
-
-        Session currentSession = sessionFactory.getCurrentSession();
-
-        return currentSession.createQuery("SELECT VL FROM VCXLink VL " +
-                        "WHERE VL.link = :link", VCXLink.class)
-                .setParameter("link", uploadLink)
                 .uniqueResultOptional();
     }
 
