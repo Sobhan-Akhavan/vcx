@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class UserUtil {
-
     private boolean isAuthenticated() {
         SecurityContext context = SecurityContextHolder.getContext();
         return context != null &&

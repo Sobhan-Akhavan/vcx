@@ -31,8 +31,8 @@ public class VCXPlan {
     private Long price;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "MONTH_LIMIT", nullable = false)
-    private MonthLimit monthLimit;
+    @Column(name = "DAYS_LIMIT", nullable = false)
+    private DaysLimit daysLimit;
 
     @Column(name = "ACTIVE", nullable = false)
     private Boolean active;
@@ -53,11 +53,11 @@ public class VCXPlan {
 
     @Getter
     @AllArgsConstructor
-    public enum MonthLimit {
-        ONE(1),
-        THREE(3),
-        SIX(6),
-        TWELVE(12);
+    public enum DaysLimit {
+        ONE_MONTH(31),
+        THREE_MONTH(93),
+        SIX_MONTH(186),
+        TWELVE_MONTH(372);
 
         private final int value;
     }

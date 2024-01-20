@@ -16,7 +16,7 @@ public class VCXPlan {
     private String name;
     private String hash;
     private long price;
-    private ir.vcx.data.entity.VCXPlan.MonthLimit monthLimit;
+    private ir.vcx.data.entity.VCXPlan.DaysLimit daysLimit;
     private Boolean active;
     private Date created;
     private Date updated;

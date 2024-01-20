@@ -18,12 +18,16 @@ public enum VCXExceptionStatus {
     INVALID_NAME_VALUE(400, "Invalid name value", "نام وارد شده معتبر نمی‌باشد."),
     INVALID_NAME_VALUE_LENGTH(400, "Invalid name value length", "نام وارد شده حدااقل می‌بایست دارای ۳ حرف باشد"),
     INVALID_PAGINATION_ORDER(400, "Invalid pagination order", "نوع مرتب کننده لیست قابل قبول نمی‌باشد"),
+    INVALID_AUTHENTICATION_INFORMATION(400, "Invalid authentication information.", "اطلاعات کاربر معتبر نمی‌باشد"),
+
 
     UNAUTHORIZED(401, "Unauthorized", "درخواست دسترسی معتبر نیست"),
     INVALID_AUTHORIZATION_TYPE(401, "Invalid authorization type", "احراز هویت باید از نوع Bearer باشد"),
 
     FORBIDDEN(403, "Forbidden", "درخواست دسترسی رد شد"),
     NOT_FOUND(404, "Request not found", "درخواست مورد نظر پیدا نشد"),
+    PLAN_NOT_FOUND(404, "Plan not found", "طرح اشتراکی با این مشخصات یافت نشد"),
+    SUBSCRIPTION_PLAN_NOT_FOUND(400, "Subscription plan not found", "طرح اشتراک فعالی یافت نشد"),
     FOLDER_NOT_FOUND(404, "Folder not found", "پوشه مورد نظر پیدا نشد"),
     CONTENT_NOT_FOUND(404, "Content not found", "محتوایی با این شناسه یافت نشد"),
     PARENT_FOLDER_NOT_FOUND(404, "Parent folder not found", "پوشه مقصد پیدا نشد"),

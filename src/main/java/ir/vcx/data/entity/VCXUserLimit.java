@@ -40,6 +40,11 @@ public class VCXUserLimit {
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "EXPIRATION", nullable = false, updatable = false)
+    private Date expiration;
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "CREATED", nullable = false, updatable = false)
     private Date created;
 

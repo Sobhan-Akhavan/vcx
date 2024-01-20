@@ -38,14 +38,14 @@ public class PlanRepository {
                 .getSingleResult();
     }
 
-    public VCXPlan addPlan(String name, long price, VCXPlan.MonthLimit limit, boolean active) {
+    public VCXPlan addPlan(String name, long price, VCXPlan.DaysLimit limit, boolean active) {
         Session currentSession = sessionFactory.getCurrentSession();
 
         VCXPlan vcxPlan = new VCXPlan();
         vcxPlan.setName(name);
         vcxPlan.setHash(StringUtil.generateHash(4).toUpperCase());
         vcxPlan.setPrice(price);
-        vcxPlan.setMonthLimit(limit);
+        vcxPlan.setDaysLimit(limit);
         vcxPlan.setActive(active);
 
         currentSession.persist(vcxPlan);
@@ -53,15 +53,15 @@ public class PlanRepository {
         return vcxPlan;
     }
 
-    public Optional<VCXPlan> getActivePlanByLimit(VCXPlan.MonthLimit monthLimit) {
+    public Optional<VCXPlan> getActivePlanByLimit(VCXPlan.DaysLimit daysLimit) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
         return currentSession.createQuery("SELECT VP FROM VCXPlan VP " +
-                        "WHERE VP.monthLimit = :limit " +
+                        "WHERE VP.daysLimit = :limit " +
                         "AND VP.active = :active", VCXPlan.class)
                 .setParameter("active", Boolean.TRUE)
-                .setParameter("limit", monthLimit)
+                .setParameter("limit", daysLimit)
                 .uniqueResultOptional();
 
     }
@@ -73,6 +73,19 @@ public class PlanRepository {
                         "SET VP.active = :active")
                 .setParameter("active", Boolean.FALSE)
                 .executeUpdate();
+
+    }
+
+    public Optional<VCXPlan> getPlan(String hash) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT VP FROM VCXPlan VP " +
+                        "WHERE VP.hash = :hash " +
+                        "AND VP.active = :active", VCXPlan.class)
+                .setParameter("hash", hash)
+                .setParameter("active", Boolean.TRUE)
+                .uniqueResultOptional();
 
     }
 }

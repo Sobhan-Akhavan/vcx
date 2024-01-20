@@ -6,10 +6,12 @@ import com.fanapium.keylead.client.exception.TokenInitializationException;
 import com.fanapium.keylead.client.exception.UserOperationException;
 import com.fanapium.keylead.client.tokens.ShortlifeToken;
 import com.fanapium.keylead.client.tokens.Tokens;
+import com.fanapium.keylead.client.users.ClientModifiableUser;
 import com.fanapium.keylead.client.users.ModifiableUser;
 import com.fanapium.keylead.client.users.Users;
 import com.fanapium.keylead.client.vo.ClientCredentials;
 import com.fanapium.keylead.common.oauth.exception.OAuthException;
+import ir.vcx.api.model.IdentityType;
 import ir.vcx.data.entity.VCXUser;
 import ir.vcx.domain.model.UserCredential;
 import ir.vcx.domain.service.UserService;
@@ -79,7 +81,7 @@ public class KeyleadConfiguration {
 
             ModifiableUser modifiableUser = ssoToken.getLeft();
 
-            VCXUser user = userService.performUser(modifiableUser);
+            VCXUser user = userService.getOrCreatePodUser(modifiableUser);
 
             userCredential = new UserCredential(token, user);
         }
@@ -101,62 +103,28 @@ public class KeyleadConfiguration {
         }
     }
 
-//    public ClientModifiableUser getSsoUserByIdentity(String identity, UserIdentityType identityType) throws SpaceException {
-//        long startTime = new Date().getTime();
-//        ClientModifiableUser user;
-//
-//        try {
-//            switch (identityType) {
-//                case phone_number:
-//                    user = Users.fromPhoneNumber(identity, clientCredentials);
-//                    break;
-//                case email:
-//                    user = Users.fromEmail(identity, clientCredentials);
-//                    break;
-//                case username:
-//                    user = Users.fromUsername(identity, clientCredentials);
-//                    break;
-//                case id:
-//                    user = Users.fromId(Long.parseLong(identity, 10), clientCredentials);
-//                    break;
-//                default:
-//                    throw new SpaceException(SpaceExceptionStatus.INVALID_AUTHENTICATION_INFORMATION);
-//            }
-//        } catch (UserOperationException e) {
-//            log.error("PROCESS_REQUEST_ERROR in getSsoUserByIdentity", e);
-//            throw new SpaceException(SpaceExceptionStatus.PROCESS_REQUEST_ERROR);
-//        } catch (OAuthException e) {
-//            throw new SpaceException(SpaceExceptionStatus.INVALID_AUTHENTICATION_INFORMATION);
-//        }
-//        log.debug("getSsoUserByIdentity: {}", new Date().getTime() - startTime);
-//        return user;
-//    }
-//
-//
-//    public ClientModifiableUser getSsoUserByIdentityWithType(String identity, ir.pod.podspace.api.model.UserIdentityType identityType) throws SpaceException {
-//        long startTime = new Date().getTime();
-//        ClientModifiableUser user;
-//
-//        try {
-//            switch (identityType) {
-//                case ssoId:
-//                    user = Users.fromId(Long.valueOf(identity), clientCredentials);
-//                    break;
-//                case username:
-//                    user = Users.fromUsername(identity, clientCredentials);
-//                    break;
-//                case phoneNumber:
-//                    user = Users.fromPhoneNumber(identity, clientCredentials);
-//                    break;
-//                default:
-//                    throw new SpaceException(SpaceExceptionStatus.INVALID_AUTHENTICATION_INFORMATION);
-//            }
-//        } catch (UserOperationException e) {
-//            throw new SpaceException(SpaceExceptionStatus.PROCESS_REQUEST_ERROR);
-//        } catch (OAuthException | NumberFormatException e) {
-//            throw new SpaceException(SpaceExceptionStatus.INVALID_AUTHENTICATION_INFORMATION);
-//        }
-//        log.debug("getSsoUserByIdentityWithType: {}", new Date().getTime() - startTime);
-//        return user;
-//    }
+    public ClientModifiableUser getSSOUser(String identity, IdentityType identityType) throws VCXException {
+
+        ClientModifiableUser user;
+
+        try {
+            switch (identityType) {
+                case SSO_ID:
+                    user = Users.fromId(Long.valueOf(identity), clientCredentials);
+                    break;
+                case USERNAME:
+                    user = Users.fromUsername(identity, clientCredentials);
+                    break;
+                case PHONE_NUMBER:
+                    user = Users.fromPhoneNumber(identity, clientCredentials);
+                    break;
+                default:
+                    throw new VCXException(VCXExceptionStatus.INVALID_AUTHENTICATION_INFORMATION);
+            }
+        } catch (OAuthException | NumberFormatException | UserOperationException e) {
+            throw new VCXException(VCXExceptionStatus.SSO_CONNECTION_ERROR);
+        }
+
+        return user;
+    }
 }
