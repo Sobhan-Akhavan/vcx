@@ -58,14 +58,14 @@ public class UserRepository {
         return (VCXUser) session.merge(vcxUser);
     }
 
-    public Optional<VCXPlan> getActiveUserPlan(VCXUser vcxUser) {
+    public Optional<VCXUserLimit> getActiveUserPlan(VCXUser vcxUser) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
         return currentSession.createQuery("SELECT VUL FROM VCXUserLimit VUL " +
                         "WHERE VUL.user = :user " +
                         "AND VUL.expiration > :exp " +
-                        "AND VUL.active = :active", VCXPlan.class)
+                        "AND VUL.active = :active", VCXUserLimit.class)
                 .setParameter("user", vcxUser)
                 .setParameter("exp", DateUtil.getNowDate())
                 .setParameter("active", Boolean.TRUE)

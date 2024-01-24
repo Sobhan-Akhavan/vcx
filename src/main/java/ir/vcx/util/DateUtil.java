@@ -20,16 +20,9 @@ public class DateUtil {
     public static Date getNowDate() {
         return getNowCalendar().getTime();
     }
-
-    public static Date futureTime(TimeInFuture timeInFuture) {
-        Calendar nowCalendar = getNowCalendar();
-        nowCalendar.add(Calendar.DATE, timeInFuture.time);
-        return nowCalendar.getTime();
-    }
-
     public static Date calculateTime(int days) {
         Calendar nowCalendar = getNowCalendar();
-        nowCalendar.add(Calendar.DATE, days);
+        nowCalendar.add(Calendar.DAY_OF_MONTH, days);
         return nowCalendar.getTime();
     }
 
@@ -52,7 +45,7 @@ public class DateUtil {
 
         ;
 
-        private final int time;
+        private final int days;
     }
 
 }

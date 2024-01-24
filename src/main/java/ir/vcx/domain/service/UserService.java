@@ -6,6 +6,8 @@ import ir.vcx.data.entity.VCXPlan;
 import ir.vcx.data.entity.VCXUser;
 import ir.vcx.data.entity.VCXUserLimit;
 import ir.vcx.data.repository.UserRepository;
+import ir.vcx.exception.VCXException;
+import ir.vcx.exception.VCXExceptionStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,13 +89,20 @@ public class UserService {
         return userRepository.getActiveUserPlan(vcxUser).isPresent();
     }
 
-    public VCXUserLimit setPlanForUser(VCXUser vcxUser, VCXPlan vcxPlan, Date expirationDate, String trackingNumber) {
+    public VCXUserLimit setPlanForUser(VCXUser vcxUser, VCXPlan vcxPlan, Date expirationDate) {
+
+        return userRepository.setUserPlan(vcxUser, vcxPlan, expirationDate);
+    }
+
+    public VCXUserLimit setPlanForUser(VCXUser vcxUser, VCXPlan vcxPlan, Date expirationDate, String trackingNumber) throws VCXException {
+
+        if (StringUtils.isBlank(trackingNumber)) {
+            throw new VCXException(VCXExceptionStatus.INVALID_REQUEST);
+        }
 
         VCXUserLimit vcxUserLimit = userRepository.setUserPlan(vcxUser, vcxPlan, expirationDate);
 
-        if (StringUtils.isNoneBlank(trackingNumber)) {
-            userRepository.saveUserPayment(vcxUserLimit, trackingNumber);
-        }
+        userRepository.saveUserPayment(vcxUserLimit, trackingNumber);
 
         return vcxUserLimit;
     }

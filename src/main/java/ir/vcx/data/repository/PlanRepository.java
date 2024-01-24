@@ -26,7 +26,9 @@ public class PlanRepository {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
-        return currentSession.createQuery("SELECT VP FROM VCXPlan VP", VCXPlan.class)
+        return currentSession.createQuery("SELECT VP FROM VCXPlan VP " +
+                        "WHERE VP.active = :active", VCXPlan.class)
+                .setParameter("active", Boolean.TRUE)
                 .getResultList();
     }
 
@@ -34,7 +36,9 @@ public class PlanRepository {
     public Long getPlansCount() {
         Session currentSession = sessionFactory.getCurrentSession();
 
-        return currentSession.createQuery("SELECT COUNT(VP) FROM VCXPlan VP", Long.class)
+        return currentSession.createQuery("SELECT COUNT(VP) FROM VCXPlan VP " +
+                        "WHERE VP.active = :active", Long.class)
+                .setParameter("active", Boolean.TRUE)
                 .getSingleResult();
     }
 

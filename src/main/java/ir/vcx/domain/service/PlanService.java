@@ -12,6 +12,7 @@ import ir.vcx.util.DateUtil;
 import ir.vcx.util.KeyleadConfiguration;
 import ir.vcx.util.UserUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -127,7 +128,7 @@ public class PlanService {
     }
 
     @Transactional
-    public VCXUserLimit purchasePlan(String planHash, String identity, IdentityType identityType, boolean force, String trackingNumber) throws VCXException {
+    public VCXUserLimit setUserPlan(String planHash, String identity, IdentityType identityType, boolean force, String trackingNumber) throws VCXException {
 
         VCXUser vcxAdminUser = Optional.ofNullable(userUtil.getCredential().getUser())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
@@ -144,7 +145,13 @@ public class PlanService {
 
         Date expirationDate = DateUtil.calculateTime(vcxPlan.getDaysLimit().getValue());
 
-        return userService.setPlanForUser(vcxUser, vcxPlan, expirationDate, trackingNumber);
+        VCXUserLimit vcxUserLimit;
+        if (StringUtils.isBlank(trackingNumber)) {
+            vcxUserLimit = userService.setPlanForUser(vcxUser, vcxPlan, expirationDate);
+        } else {
+            vcxUserLimit = userService.setPlanForUser(vcxUser, vcxPlan, expirationDate, trackingNumber);
+        }
 
+        return vcxUserLimit;
     }
 }

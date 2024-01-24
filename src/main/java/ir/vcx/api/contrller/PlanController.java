@@ -166,8 +166,8 @@ public class PlanController {
             @PathVariable(name = "hash")
             @Parameter(description = "plan hash", required = true)
             String hash,
-            @RequestParam(name = "trackingNumber", required = false)
-            @Parameter(description = "purchase number")
+            @RequestParam(name = "trackingNumber")
+            @Parameter(description = "purchase number", required = true)
             String trackingNumber
     ) throws VCXException {
 
@@ -217,7 +217,7 @@ public class PlanController {
             String trackingNumber
     ) throws VCXException {
 
-        VCXUserLimit vcxUserLimit = planService.purchasePlan(hash, identity, identityType, force, trackingNumber);
+        VCXUserLimit vcxUserLimit = planService.setUserPlan(hash, identity, identityType, force, trackingNumber);
 
         ir.vcx.api.model.VCXUserLimit result = UserLimitMapper.INSTANCE.entityToApi(vcxUserLimit);
 
