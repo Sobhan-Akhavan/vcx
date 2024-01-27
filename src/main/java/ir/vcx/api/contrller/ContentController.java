@@ -194,13 +194,11 @@ public class ContentController {
             String hash
     ) throws VCXException {
 
-        VCXContent vcxContent = contentService.deleteContent(hash);
-
-        ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
+        contentService.deleteContent(hash);
 
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
-                .result(new ApiPageList<>(content))
+                .message("فایل مورد نظر با موفقیت حذف شد.")
                 .build()
         );
     }

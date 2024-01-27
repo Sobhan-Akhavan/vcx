@@ -31,7 +31,7 @@ public class VCXContent {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "HASH", nullable = false)
+    @Column(name = "HASH", unique = true, nullable = false)
     private String hash;
 
     @OneToMany(fetch = FetchType.LAZY)
