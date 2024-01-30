@@ -2,23 +2,21 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-    <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
 
-    <property name="CONSOLE_FILE_PATH" value="./applog/vcx/spring"/>
     <property name="SPECIAL_FILE_PATH" value="./applog/vcx/request_response"/>
+    <property name="CONSOLE_FILE_PATH" value="./applog/vcx/spring"/>
 
-    <appender name="CONSOLE_FILE" class="ch.qos.logback.core.FileAppender">
+    <appender name="CONSOLE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
 
         <file>${CONSOLE_FILE_PATH}/spring.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${CONSOLE_FILE_PATH}/spring-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>5</maxHistory>
-            <totalSizeCap>1GB</totalSizeCap>
+            <maxHistory>0</maxHistory>
         </rollingPolicy>
 
     </appender>
