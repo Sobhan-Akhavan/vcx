@@ -38,16 +38,17 @@ public class KeyleadConfiguration {
 
 
     private final UserService userService;
-    @Value("${security.sso.server-url}")
-    private String SECURITY_SSO_SERVER_URL;
-    @Value("${security.sso.client-id}")
-    private String SECURITY_SSO_CLIENT_ID;
-    @Value("${security.sso.client-secret}")
-    private String SECURITY_SSO_CLIENT_SECRET;
+    @Value("${service.pod.sso.url}")
+    private String POD_SSO_SERVER_URL;
+    @Value("${service.pod.sso.client-id}")
+    private String POD_SSO_CLIENT_ID;
     @Value("${security.sso.server-redirect-url}")
     private String SECURITY_SSO_REDIRECT_URL;
-    @Value("${security.sso.api-token}")
-    private String SECURITY_SSO_API_TOKEN;
+    @Value("${service.pod.sso.client-secret}")
+    private String POD_SSO_CLIENT_SECRET;
+    @Value("${service.pod.sso.api-token}")
+    private String POD_SSO_API_TOKEN;
+
     private ClientCredentials clientCredentials;
 
     @Autowired
@@ -58,13 +59,13 @@ public class KeyleadConfiguration {
     @PostConstruct
     public void init() {
 
-        KeyleadClient keyleadClient = KeyleadClientFactory.createClient(SECURITY_SSO_SERVER_URL);
+        KeyleadClient keyleadClient = KeyleadClientFactory.createClient(POD_SSO_SERVER_URL);
 
         clientCredentials = new ClientCredentials(
-                SECURITY_SSO_CLIENT_ID,
-                SECURITY_SSO_CLIENT_SECRET,
+                POD_SSO_CLIENT_ID,
+                POD_SSO_CLIENT_SECRET,
                 SECURITY_SSO_REDIRECT_URL,
-                SECURITY_SSO_API_TOKEN
+                POD_SSO_API_TOKEN
         );
     }
 

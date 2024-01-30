@@ -32,8 +32,8 @@ public class PodSpaceUtil {
     private String PODSPACE_HOST;
     @Value("${service.podspace.port}")
     private int PODSPACE_PORT;
-    @Value("${security.sso.api-token}")
-    private String API_TOKEN;
+    @Value("${service.pod.sso.api-token}")
+    private String POD_SSO_API_TOKEN;
 
     public PodSpaceUtil(WebClient webClient) {
         this.webClient = webClient;
@@ -52,7 +52,7 @@ public class PodSpaceUtil {
                             .queryParam("name", folderName.toUpperCase())
                             .queryParamIfPresent("parentHash", Optional.ofNullable(parentHash))
                             .build())
-                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<SpaceResponse<Folder>>() {
                     })
@@ -82,7 +82,7 @@ public class PodSpaceUtil {
                             .queryParam("destination", destinationHash)
                             .queryParam("expiration", DateUtil.calculateTime(DateUtil.TimeInFuture.OneDay.getDays()).getTime())
                             .build())
-                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<SpaceResponse<UploadLink>>() {
                     })
@@ -108,7 +108,7 @@ public class PodSpaceUtil {
                             .port(PODSPACE_PORT)
                             .path("/api/files/uploaded_file_info/{file_url}")
                             .build(fileUrl))
-                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<SpaceResponse<EntityDetail>>() {
                     })
@@ -134,7 +134,7 @@ public class PodSpaceUtil {
                             .port(PODSPACE_PORT)
                             .path("/api/files/{hash}/detail")
                             .build(entityHash))
-                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<SpaceResponse<EntityDetail>>() {
                     })
@@ -161,7 +161,7 @@ public class PodSpaceUtil {
                             .path("/api/trashes/{hash}")
                             .queryParam("force", true)
                             .build(entityHash))
-                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<String>() {
                     })
@@ -189,7 +189,7 @@ public class PodSpaceUtil {
                             .queryParam("expiration", DateUtil.calculateTime(DateUtil.TimeInFuture.OneHundredYears.getDays()).getTime())
                             .queryParam("access", Arrays.asList("DOWNLOAD", "VIEW"))
                             .build(entityHash))
-                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<SpaceResponse<Share>>() {
                     })
@@ -216,7 +216,7 @@ public class PodSpaceUtil {
                             .path("/api/links/files/{fileHash}")
                             .queryParam("revokeAbility", Boolean.TRUE)
                             .build(hash))
-                    .header("Authorization", "Bearer " + API_TOKEN)
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<SpaceResponse<DownloadLink>>() {
                     })
