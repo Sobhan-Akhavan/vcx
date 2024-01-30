@@ -6,6 +6,7 @@ import ir.vcx.data.entity.VCXPlan;
 import ir.vcx.data.entity.VCXUser;
 import ir.vcx.data.entity.VCXUserLimit;
 import ir.vcx.data.repository.PlanRepository;
+import ir.vcx.data.repository.UserLimitRepository;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
 import ir.vcx.util.DateUtil;
@@ -30,17 +31,22 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Service
 public class PlanService {
 
-    private final PlanRepository planRepository;
+    private final UserLimitService userLimitService;
     private final UserService userService;
+    private final PlanRepository planRepository;
+    private final UserLimitRepository userLimitRepository;
     private final UserUtil userUtil;
     private final KeyleadConfiguration keyleadConfiguration;
     private final ThreadPoolExecutor threadPoolExecutor;
 
     @Autowired
-    public PlanService(PlanRepository planRepository, UserService userService, UserUtil userUtil, KeyleadConfiguration keyleadConfiguration,
+    public PlanService(UserLimitService userLimitService, UserService userService, PlanRepository planRepository, UserLimitRepository userLimitRepository,
+                       UserUtil userUtil, KeyleadConfiguration keyleadConfiguration,
                        @Qualifier("planThreadPool") ThreadPoolExecutor threadPoolExecutor) {
         this.planRepository = planRepository;
+        this.userLimitService = userLimitService;
         this.userService = userService;
+        this.userLimitRepository = userLimitRepository;
         this.userUtil = userUtil;
         this.keyleadConfiguration = keyleadConfiguration;
         this.threadPoolExecutor = threadPoolExecutor;
@@ -100,12 +106,63 @@ public class PlanService {
     }
 
     @Transactional
-    public void deactivatePlans() throws VCXException {
+    public VCXPlan getPlan(String planHash) throws VCXException {
+        return planRepository.getPlan(planHash)
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.PLAN_NOT_FOUND));
+    }
+
+    @Transactional
+    public int deactivateAllPlans() throws VCXException {
 
         VCXUser vcxAdminUser = Optional.ofNullable(userUtil.getCredential().getUser())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
 
-        planRepository.deactivatePlans();
+        return planRepository.deactivatePlans();
+    }
+
+    @Transactional
+    public void deactivatePlan(String planHash) throws VCXException {
+
+        VCXUser vcxAdminUser = Optional.ofNullable(userUtil.getCredential().getUser())
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
+
+        VCXPlan vcxPlan = planRepository.getPlan(planHash)
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.PLAN_NOT_FOUND));
+
+        vcxPlan.setActive(Boolean.FALSE);
+
+        planRepository.updatePlan(vcxPlan);
+    }
+
+    @Transactional
+    public int deleteAllPlans() throws VCXException {
+
+        VCXUser vcxAdminUser = Optional.ofNullable(userUtil.getCredential().getUser())
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
+
+        if (userLimitRepository.anyPlanUsed() > 0) {
+            throw new VCXException(VCXExceptionStatus.INVALID_DELETE_PLAN);
+        }
+
+        return planRepository.deleteAllPlans();
+    }
+
+    @Transactional
+    public void deletePlan(String planHash) throws VCXException {
+
+        VCXUser vcxAdminUser = Optional.ofNullable(userUtil.getCredential().getUser())
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
+
+        VCXPlan vcxPlan = planRepository.getPlan(planHash)
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.PLAN_NOT_FOUND));
+
+        if (userLimitRepository.isPlanUsed(vcxPlan).isPresent()) {
+            throw new VCXException(VCXExceptionStatus.INVALID_DELETE_PLAN);
+        }
+
+        vcxPlan.setActive(Boolean.FALSE);
+
+        planRepository.updatePlan(vcxPlan);
 
     }
 
@@ -118,13 +175,13 @@ public class PlanService {
         VCXPlan vcxPlan = planRepository.getPlan(planHash)
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.PLAN_NOT_FOUND));
 
-        if (userService.hashValidPlan(vcxUser)) {
+        if (userLimitService.hashValidPlan(vcxUser)) {
             throw new VCXException(VCXExceptionStatus.INVALID_REQUEST);
         }
 
         Date expirationDate = DateUtil.calculateTime(vcxPlan.getDaysLimit().getValue());
 
-        return userService.setPlanForUser(vcxUser, vcxPlan, expirationDate, trackingNumber);
+        return userLimitService.setPlanForUser(vcxUser, vcxPlan, expirationDate, trackingNumber);
     }
 
     @Transactional
@@ -139,7 +196,7 @@ public class PlanService {
         ClientModifiableUser clientModifiableUser = keyleadConfiguration.getSSOUser(identity, identityType);
         VCXUser vcxUser = userService.getOrCreatePodUser(clientModifiableUser);
 
-        if (userService.hashValidPlan(vcxUser) && !force) {
+        if (userLimitService.hashValidPlan(vcxUser) && !force) {
             throw new VCXException(VCXExceptionStatus.INVALID_REQUEST);
         }
 
@@ -147,9 +204,9 @@ public class PlanService {
 
         VCXUserLimit vcxUserLimit;
         if (StringUtils.isBlank(trackingNumber)) {
-            vcxUserLimit = userService.setPlanForUser(vcxUser, vcxPlan, expirationDate);
+            vcxUserLimit = userLimitService.setPlanForUser(vcxUser, vcxPlan, expirationDate);
         } else {
-            vcxUserLimit = userService.setPlanForUser(vcxUser, vcxPlan, expirationDate, trackingNumber);
+            vcxUserLimit = userLimitService.setPlanForUser(vcxUser, vcxPlan, expirationDate, trackingNumber);
         }
 
         return vcxUserLimit;

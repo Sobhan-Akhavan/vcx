@@ -24,17 +24,17 @@ public class LinkService {
 
     private final FolderService folderService;
     private final ContentService contentService;
-    private final UserService userService;
+    private final UserLimitService userLimitService;
     private final LinkRepository linkRepository;
     private final PodSpaceUtil podSpaceUtil;
     private final UserUtil userUtil;
 
     @Autowired
-    public LinkService(FolderService folderService, ContentService contentService, UserService userService,
+    public LinkService(FolderService folderService, ContentService contentService, UserLimitService userLimitService,
                        LinkRepository linkRepository, PodSpaceUtil podSpaceUtil, UserUtil userUtil) {
         this.folderService = folderService;
         this.contentService = contentService;
-        this.userService = userService;
+        this.userLimitService = userLimitService;
         this.linkRepository = linkRepository;
         this.podSpaceUtil = podSpaceUtil;
         this.userUtil = userUtil;
@@ -96,7 +96,7 @@ public class LinkService {
         VCXUser vcxUser = Optional.ofNullable(userUtil.getCredential().getUser())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
 
-        if (!userService.hashValidPlan(vcxUser)) {
+        if (!userLimitService.hashValidPlan(vcxUser)) {
             throw new VCXException(VCXExceptionStatus.SUBSCRIPTION_PLAN_NOT_FOUND);
         }
 

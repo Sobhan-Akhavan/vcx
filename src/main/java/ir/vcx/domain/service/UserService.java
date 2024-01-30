@@ -2,19 +2,12 @@ package ir.vcx.domain.service;
 
 import com.fanapium.keylead.client.users.ClientModifiableUser;
 import com.fanapium.keylead.common.KeyleadUserVo;
-import ir.vcx.data.entity.VCXPlan;
 import ir.vcx.data.entity.VCXUser;
-import ir.vcx.data.entity.VCXUserLimit;
 import ir.vcx.data.repository.UserRepository;
-import ir.vcx.exception.VCXException;
-import ir.vcx.exception.VCXExceptionStatus;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Date;
 
 /**
  * Created by Sobhan on 11/16/2023 - VCX
@@ -83,27 +76,5 @@ public class UserService {
             name = userInfo.getPreferred_username();
         }
         return name;
-    }
-
-    public boolean hashValidPlan(VCXUser vcxUser) {
-        return userRepository.getActiveUserPlan(vcxUser).isPresent();
-    }
-
-    public VCXUserLimit setPlanForUser(VCXUser vcxUser, VCXPlan vcxPlan, Date expirationDate) {
-
-        return userRepository.setUserPlan(vcxUser, vcxPlan, expirationDate);
-    }
-
-    public VCXUserLimit setPlanForUser(VCXUser vcxUser, VCXPlan vcxPlan, Date expirationDate, String trackingNumber) throws VCXException {
-
-        if (StringUtils.isBlank(trackingNumber)) {
-            throw new VCXException(VCXExceptionStatus.INVALID_REQUEST);
-        }
-
-        VCXUserLimit vcxUserLimit = userRepository.setUserPlan(vcxUser, vcxPlan, expirationDate);
-
-        userRepository.saveUserPayment(vcxUserLimit, trackingNumber);
-
-        return vcxUserLimit;
     }
 }

@@ -74,8 +74,17 @@ public class PlanRepository {
         Session currentSession = sessionFactory.getCurrentSession();
 
         return currentSession.createQuery("UPDATE VCXPlan VP " +
-                        "SET VP.active = :active")
+                        "SET VP.active = :active", Integer.class)
                 .setParameter("active", Boolean.FALSE)
+                .executeUpdate();
+
+    }
+
+    public int deleteAllPlans() {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("DELETE FROM VCXPlan", Integer.class)
                 .executeUpdate();
 
     }
@@ -91,5 +100,14 @@ public class PlanRepository {
                 .setParameter("active", Boolean.TRUE)
                 .uniqueResultOptional();
 
+    }
+
+    public VCXPlan updatePlan(VCXPlan vcxPlan) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        currentSession.merge(vcxPlan);
+
+        return vcxPlan;
     }
 }

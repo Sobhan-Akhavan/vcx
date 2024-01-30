@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.vcx.api.model.ApiPageList;
+import ir.vcx.api.model.DeleteType;
 import ir.vcx.api.model.IdentityType;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.data.entity.VCXPlan;
@@ -117,8 +118,40 @@ public class PlanController {
     }
 
     @Operation(
-            summary = "deactivate all plans",
-            description = "deactivate all plans"
+            summary = "get plans list",
+            description = "get plans list"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @GetMapping("/{hash}")
+    public ResponseEntity<?> getPlan(
+            @PathVariable(name = "hash")
+            @Parameter(description = "plan hash", required = true)
+            String planHash
+    ) throws VCXException {
+
+        VCXPlan plan = planService.getPlan(planHash);
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .result(new ApiPageList<>(PlanMapper.INSTANCE.entityToApi(plan)))
+                .status(HttpStatus.OK)
+                .build()
+        );
+
+    }
+
+    @Operation(
+            summary = "deactivate/delete all plans",
+            description = "deactivate/delete all plans"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful Operation",
@@ -132,19 +165,74 @@ public class PlanController {
                             schema = @Schema(implementation = RestResponse.class))}),
     })
     @DeleteMapping
-    public ResponseEntity<?> deactivatePlans(
+    public ResponseEntity<?> deactivateOrDeletePlans(
+            @RequestParam(name = "deleteType", defaultValue = "SOFT")
+            @Parameter(description = "deactivate(soft) or delete(hard)", schema = @Schema(allowableValues = {"SOFT", "HARD"}, defaultValue = "SOFT"), required = true)
+            DeleteType deleteType
     ) throws VCXException {
 
-        planService.deactivatePlans();
+        String deleteKind;
+        int modifiablePlans;
+        if (deleteType.equals(DeleteType.SOFT)) {
+            modifiablePlans = planService.deactivateAllPlans();
+            deleteKind = "deactivated";
+        } else {
+            modifiablePlans = planService.deleteAllPlans();
+            deleteKind = "deleted";
+        }
+
+        String message = "Successfully all plans are " + deleteKind + ". count of modifiable plans: " + modifiablePlans;
 
         return ResponseEntity.ok(RestResponse.Builder()
-                .message("تمامی طرح‌های اشتراک با موفقیت غیر فعال گردیدند")
                 .status(HttpStatus.OK)
+                .message(message)
+                .build()
+        );
+    }
+
+    @Operation(
+            summary = "deactivate/delete plan",
+            description = "deactivate/delete plan"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @DeleteMapping("/{hash}")
+    public ResponseEntity<?> deactivateOrDeletePlan(
+            @PathVariable(name = "hash")
+            @Parameter(description = "plan hash", required = true)
+            String planHash,
+            @RequestParam(name = "deleteType", defaultValue = "SOFT")
+            @Parameter(description = "deactivate(soft) or delete(hard)", schema = @Schema(allowableValues = {"SOFT", "HARD"}, defaultValue = "SOFT"), required = true)
+            DeleteType deleteType
+    ) throws VCXException {
+
+        String deleteKind;
+        if (deleteType.equals(DeleteType.SOFT)) {
+            planService.deactivatePlan(planHash);
+            deleteKind = "deactivated";
+        } else {
+            planService.deletePlan(planHash);
+            deleteKind = "deleted";
+        }
+
+        String message = "Successfully plan is " + deleteKind;
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .status(HttpStatus.OK)
+                .message(message)
                 .build()
         );
 
     }
-
 
     @Operation(
             summary = "purchase plan",

@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -29,6 +30,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 @Service
 public class ContentService {
+
+    @Value("${service.pod.sso.id}")
+    private int VCX_SSO_ID;
 
     private final FolderRepository folderRepository;
     private final ContentRepository contentRepository;
@@ -141,8 +145,8 @@ public class ContentService {
         EntityDetail entityDetail = podSpaceUtil.getEntityDetail(hash)
                 .getResult();
 
-        if (entityDetail.getOwner().getSsoId() != 98878) {
-            throw new VCXException(VCXExceptionStatus.UNAUTHORIZED);
+        if (entityDetail.getOwner().getSsoId() != VCX_SSO_ID) {
+            throw new VCXException(VCXExceptionStatus.INVALID_ENTITY_OWNER);
         }
     }
 
