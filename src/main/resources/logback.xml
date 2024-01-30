@@ -4,8 +4,24 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
     <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
 
-    <property name="SPECIAL_FILE_PATH" value="applog/vcx/request_response"/>
-    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring.log}"/>
+    <property name="CONSOLE_FILE_PATH" value="./applog/vcx/spring"/>
+    <property name="SPECIAL_FILE_PATH" value="./applog/vcx/request_response"/>
+
+    <appender name="CONSOLE_FILE" class="ch.qos.logback.core.FileAppender">
+
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} - %msg%n</pattern>
+        </encoder>
+
+        <file>${CONSOLE_FILE_PATH}/spring.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${CONSOLE_FILE_PATH}/spring-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>5</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+
+    </appender>
 
     <appender name="SPECIAL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
@@ -26,6 +42,7 @@
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="CONSOLE_FILE"/>
     </root>
 
     <logger name="ir.vcx.api.filter.RequestResponseLoggerAdvice" level="info" additivity="false">
