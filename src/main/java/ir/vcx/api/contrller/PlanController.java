@@ -100,9 +100,12 @@ public class PlanController {
     })
     @GetMapping
     public ResponseEntity<?> getPlans(
+            @RequestParam(name = "includeDeactivatedPlan", defaultValue = "FALSE", required = false)
+            @Parameter(description = "return deactivated plan", schema = @Schema(allowableValues = {"FALSE", "TRUE"}, defaultValue = "FALSE"))
+            boolean includeDeactivatedPlan
     ) throws VCXException {
 
-        Pair<List<VCXPlan>, Long> plansList = planService.getPlansList();
+        Pair<List<VCXPlan>, Long> plansList = planService.getPlansList(includeDeactivatedPlan);
 
         List<ir.vcx.api.model.VCXPlan> contentList = plansList.getKey()
                 .stream()
@@ -118,8 +121,8 @@ public class PlanController {
     }
 
     @Operation(
-            summary = "get plans list",
-            description = "get plans list"
+            summary = "get plan",
+            description = "get plan"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful Operation",

@@ -52,11 +52,10 @@ public class PlanService {
         this.threadPoolExecutor = threadPoolExecutor;
     }
 
-    public Pair<List<VCXPlan>, Long> getPlansList() throws VCXException {
+    public Pair<List<VCXPlan>, Long> getPlansList(boolean includeDeactivatedPlan) throws VCXException {
 
-        Future<List<VCXPlan>> getPlansListThread = threadPoolExecutor.submit(planRepository::getPlansList);
-
-        Future<Long> getPlansCountThread = threadPoolExecutor.submit(planRepository::getPlansCount);
+        Future<List<VCXPlan>> getPlansListThread = threadPoolExecutor.submit(() -> planRepository.getPlansList(includeDeactivatedPlan));
+        Future<Long> getPlansCountThread = threadPoolExecutor.submit(() -> planRepository.getPlansCount(includeDeactivatedPlan));
 
         try {
             List<VCXPlan> contents = getPlansListThread.get();

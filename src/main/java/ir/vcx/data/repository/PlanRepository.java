@@ -22,22 +22,32 @@ public class PlanRepository {
     }
 
     @Transactional
-    public List<VCXPlan> getPlansList() {
+    public List<VCXPlan> getPlansList(boolean includeDeactivatedPlan) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
-        return currentSession.createQuery("SELECT VP FROM VCXPlan VP " +
-                        "WHERE VP.active = :active", VCXPlan.class)
+        StringBuilder stringQuery = new StringBuilder("SELECT VP FROM VCXPlan VP ");
+
+        if (!includeDeactivatedPlan) {
+            stringQuery.append("WHERE VP.active = :active");
+        }
+
+        return currentSession.createQuery(stringQuery.toString(), VCXPlan.class)
                 .setParameter("active", Boolean.TRUE)
                 .getResultList();
     }
 
     @Transactional
-    public Long getPlansCount() {
+    public Long getPlansCount(boolean includeDeactivatedPlan) {
         Session currentSession = sessionFactory.getCurrentSession();
 
-        return currentSession.createQuery("SELECT COUNT(VP) FROM VCXPlan VP " +
-                        "WHERE VP.active = :active", Long.class)
+        StringBuilder stringQuery = new StringBuilder("SELECT COUNT(VP) FROM VCXPlan VP ");
+
+        if (!includeDeactivatedPlan) {
+            stringQuery.append("WHERE VP.active = :active");
+        }
+
+        return currentSession.createQuery(stringQuery.toString(), Long.class)
                 .setParameter("active", Boolean.TRUE)
                 .getSingleResult();
     }
