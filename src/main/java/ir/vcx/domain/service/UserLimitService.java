@@ -9,8 +9,10 @@ import ir.vcx.exception.VCXExceptionStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * Created by Sobhan Akhavan on 1/28/2024 - vcx
@@ -27,7 +29,7 @@ public class UserLimitService {
     }
 
     public boolean hashValidPlan(VCXUser vcxUser) {
-        return userLimitRepository.getActiveUserPlan(vcxUser).isPresent();
+        return userLimitRepository.getActiveUserPlan(vcxUser, false, false).isPresent();
     }
 
     public VCXUserLimit setPlanForUser(VCXUser vcxUser, VCXPlan vcxPlan, Date expirationDate) {
@@ -46,5 +48,11 @@ public class UserLimitService {
         userLimitRepository.saveUserPayment(vcxUserLimit, trackingNumber);
 
         return vcxUserLimit;
+    }
+
+    @Transactional
+    public Optional<VCXUserLimit> getUserLimit(VCXUser vcxUser) {
+
+        return userLimitRepository.getActiveUserPlan(vcxUser, Boolean.FALSE, Boolean.TRUE);
     }
 }

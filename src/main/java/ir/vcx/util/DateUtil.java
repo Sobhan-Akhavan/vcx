@@ -20,6 +20,7 @@ public class DateUtil {
     public static Date getNowDate() {
         return getNowCalendar().getTime();
     }
+
     public static Date calculateTime(int days) {
         Calendar nowCalendar = getNowCalendar();
         nowCalendar.add(Calendar.DAY_OF_MONTH, days);

@@ -10,8 +10,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.vcx.api.model.ApiPageList;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.data.entity.VCXUser;
-import ir.vcx.data.mapper.UserMapper;
+import ir.vcx.data.entity.VCXUserLimit;
+import ir.vcx.data.mapper.UserLimitMapper;
 import ir.vcx.domain.model.sso.otp.Handshake;
+import ir.vcx.domain.service.UserLimitService;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
 import ir.vcx.util.UserUtil;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 /**
  * Created by Sobhan on 11/16/2023 - VCX
  */
@@ -34,11 +38,12 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirement(name = "Bearer")
 @RestController
 public class AboutMeController {
-
+    private final UserLimitService userLimitService;
     private final UserUtil userUtil;
 
     @Autowired
-    public AboutMeController(UserUtil userUtil) {
+    public AboutMeController(UserLimitService userLimitService, UserUtil userUtil) {
+        this.userLimitService = userLimitService;
         this.userUtil = userUtil;
     }
 
@@ -60,18 +65,17 @@ public class AboutMeController {
     @GetMapping
     public ResponseEntity<?> getUser() throws VCXException {
 
-        VCXUser vcxUser = userUtil.getCredential().getUser();
+        VCXUser vcxUser = Optional.ofNullable(userUtil.getCredential().getUser())
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
 
-        if (vcxUser == null) {
-            throw new VCXException(VCXExceptionStatus.UNAUTHORIZED);
-        }
+        Optional<VCXUserLimit> userPlan = userLimitService.getUserLimit(vcxUser);
 
-        ir.vcx.api.model.VCXUser user = UserMapper.INSTANCE.entityToApi(vcxUser);
+        VCXUserLimit vcxUserLimit = userPlan.orElseGet(VCXUserLimit::new);
+        vcxUserLimit.setUser(vcxUser);
 
         return ResponseEntity.ok(RestResponse.Builder()
-                .result(new ApiPageList<>(user))
+                .result(new ApiPageList<>(UserLimitMapper.INSTANCE.entityToApi(vcxUserLimit)))
                 .status(HttpStatus.OK)
-                .build()
-        );
+                .build());
     }
 }

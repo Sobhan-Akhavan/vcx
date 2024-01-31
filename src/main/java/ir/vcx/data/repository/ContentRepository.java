@@ -78,10 +78,7 @@ public class ContentRepository {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
-        currentSession.merge(vcxContent);
-
-        return vcxContent;
-
+        return (VCXContent) currentSession.merge(vcxContent);
     }
 
     @Transactional

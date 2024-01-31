@@ -27,14 +27,33 @@ public class UserLimitRepository {
         this.sessionFactory = sessionFactory;
     }
 
-    public Optional<VCXUserLimit> getActiveUserPlan(VCXUser vcxUser) {
+    public Optional<VCXUserLimit> getActiveUserPlan(VCXUser vcxUser, boolean needUser, boolean needPlan) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
-        return currentSession.createQuery("SELECT VUL FROM VCXUserLimit VUL " +
-                        "WHERE VUL.user = :user " +
-                        "AND VUL.expiration > :exp " +
-                        "AND VUL.active = :active", VCXUserLimit.class)
+        StringBuilder stringQuery = new StringBuilder("SELECT VUL FROM VCXUserLimit VUL ");
+
+        if (needUser) {
+            stringQuery.append("INNER JOIN FETCH VUL.user VU ");
+        }
+
+        if (needPlan) {
+            stringQuery.append("LEFT JOIN FETCH VUL.plan VP ");
+        }
+
+
+        if (needUser) {
+            stringQuery.append("WHERE VU = :user ");
+        } else {
+            stringQuery.append("WHERE VUL.user = :user ");
+        }
+
+
+        stringQuery.append("AND VUL.expiration > :exp ");
+        stringQuery.append("AND VUL.active = :active");
+
+
+        return currentSession.createQuery(stringQuery.toString(), VCXUserLimit.class)
                 .setParameter("user", vcxUser)
                 .setParameter("exp", DateUtil.getNowDate())
                 .setParameter("active", Boolean.TRUE)

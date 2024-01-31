@@ -4,6 +4,7 @@ import ir.vcx.data.entity.VCXPlan;
 import ir.vcx.util.StringUtil;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +33,13 @@ public class PlanRepository {
             stringQuery.append("WHERE VP.active = :active");
         }
 
-        return currentSession.createQuery(stringQuery.toString(), VCXPlan.class)
-                .setParameter("active", Boolean.TRUE)
-                .getResultList();
+        Query<VCXPlan> query = currentSession.createQuery(stringQuery.toString(), VCXPlan.class);
+
+        if (!includeDeactivatedPlan) {
+            query.setParameter("active", Boolean.TRUE);
+        }
+
+        return query.getResultList();
     }
 
     @Transactional
@@ -47,9 +52,13 @@ public class PlanRepository {
             stringQuery.append("WHERE VP.active = :active");
         }
 
-        return currentSession.createQuery(stringQuery.toString(), Long.class)
-                .setParameter("active", Boolean.TRUE)
-                .getSingleResult();
+        Query<Long> query = currentSession.createQuery(stringQuery.toString(), Long.class);
+
+        if (!includeDeactivatedPlan) {
+            query.setParameter("active", Boolean.TRUE);
+        }
+
+        return query.getSingleResult();
     }
 
     public VCXPlan addPlan(String name, long price, VCXPlan.DaysLimit limit, boolean active) {

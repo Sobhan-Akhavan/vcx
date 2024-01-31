@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -73,17 +74,17 @@ public class ContentService {
     @Transactional
     public VCXContent updateContent(String hash, String name, String description, Set<GenreType> genreTypes) throws VCXException {
 
-        VCXContent vcxContent = getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+        VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
 
-        if (StringUtils.isNotBlank(name)) {
+        if (StringUtils.isNotBlank(name) && !Objects.equals(vcxContent.getName(), name)) {
             vcxContent.setName(name);
         }
 
-        if (StringUtils.isNotBlank(description)) {
-            vcxContent.setName(name);
+        if (StringUtils.isNotBlank(description) && !Objects.equals(vcxContent.getDescription(), description)) {
+            vcxContent.setDescription(description);
         }
 
-        if (!genreTypes.isEmpty()) {
+        if (genreTypes != null && !genreTypes.isEmpty() && !Objects.equals(vcxContent.getGenresType(), genreTypes)) {
             vcxContent.setGenresType(genreTypes);
         }
 

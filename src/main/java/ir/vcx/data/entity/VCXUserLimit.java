@@ -25,10 +25,10 @@ public class VCXUserLimit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     private VCXPlan plan;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     private VCXUser user;
 
     @Column(name = "ACTIVE", nullable = false)
@@ -38,7 +38,6 @@ public class VCXUserLimit {
     @Column(name = "OPTLOCK", nullable = false)
     private Integer optlock;
 
-    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "EXPIRATION", nullable = false, updatable = false)
     private Date expiration;
