@@ -153,6 +153,49 @@ public class PlanController {
     }
 
     @Operation(
+            summary = "add plan",
+            description = "add plan"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @PatchMapping("/{hash}")
+    public ResponseEntity<?> updatePlan(
+            @PathVariable(name = "hash")
+            @Parameter(description = "plan hash", required = true)
+            String planHash,
+            @RequestParam(name = "price", required = false)
+            @Parameter(description = "price (TOMAN)")
+            Long price,
+            @RequestParam(name = "limit", required = false)
+            @Parameter(description = "month limitation")
+            VCXPlan.DaysLimit limit,
+            @RequestParam(name = "active", required = false)
+            @Parameter(description = "is plan active", schema = @Schema(defaultValue = "TRUE", allowableValues = {"TRUE", "FALSE"}))
+            Boolean active
+    ) throws VCXException {
+
+        VCXPlan vcxPlan = planService.updatePlan(planHash, price, limit, active);
+
+        ir.vcx.api.model.VCXPlan result = PlanMapper.INSTANCE.entityToApi(vcxPlan);
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .result(new ApiPageList<>(result))
+                .status(HttpStatus.OK)
+                .build()
+        );
+
+    }
+
+    @Operation(
             summary = "deactivate/delete all plans",
             description = "deactivate/delete all plans"
     )

@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -75,6 +76,59 @@ public class PlanService {
         VCXUser vcxAdminUser = Optional.ofNullable(userUtil.getCredential().getUser())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
 
+        String name = checkPlanName(limit);
+
+        if (planRepository.getActivePlanByLimit(limit).isPresent()) {
+
+            throw new VCXException(VCXExceptionStatus.PLAN_LIMIT_CONFLICT);
+
+        } else {
+
+            return planRepository.addPlan(name, price, limit, active);
+
+        }
+    }
+
+    @Transactional
+    public VCXPlan getPlan(String planHash) throws VCXException {
+        return planRepository.getPlan(planHash)
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.PLAN_NOT_FOUND));
+    }
+
+
+    @Transactional
+    public VCXPlan updatePlan(String planHash, Long price, VCXPlan.DaysLimit limit, Boolean active) throws VCXException {
+
+        VCXPlan vcxPlan = getPlan(planHash);
+
+        if (price == null && limit == null && active == null) {
+            throw new VCXException(VCXExceptionStatus.INVALID_NULL_PARAMETERS);
+        }
+
+        if (price != null && !Objects.equals(vcxPlan.getPrice(), price)) {
+            vcxPlan.setPrice(price);
+        }
+
+        if (limit != null && !Objects.equals(vcxPlan.getDaysLimit(), limit)) {
+            vcxPlan.setDaysLimit(limit);
+            vcxPlan.setName(checkPlanName(limit));
+        }
+
+        if (active != null && !Objects.equals(vcxPlan.getActive(), active)) {
+
+            if (active && planRepository.getActivePlanByLimit(limit).isPresent()) {
+                throw new VCXException(VCXExceptionStatus.PLAN_LIMIT_CONFLICT);
+            }
+
+            vcxPlan.setActive(active);
+        }
+
+
+        return planRepository.updatePlan(vcxPlan);
+
+    }
+
+    private String checkPlanName(VCXPlan.DaysLimit limit) throws VCXException {
         String name;
         switch (limit) {
             case ONE_MONTH:
@@ -92,22 +146,7 @@ public class PlanService {
             default:
                 throw new VCXException(VCXExceptionStatus.UNKNOWN_ERROR);
         }
-
-        if (planRepository.getActivePlanByLimit(limit).isPresent()) {
-
-            throw new VCXException(VCXExceptionStatus.PLAN_LIMIT_CONFLICT);
-
-        } else {
-
-            return planRepository.addPlan(name, price, limit, active);
-
-        }
-    }
-
-    @Transactional
-    public VCXPlan getPlan(String planHash) throws VCXException {
-        return planRepository.getPlan(planHash)
-                .orElseThrow(() -> new VCXException(VCXExceptionStatus.PLAN_NOT_FOUND));
+        return name;
     }
 
     @Transactional
@@ -159,10 +198,7 @@ public class PlanService {
             throw new VCXException(VCXExceptionStatus.INVALID_DELETE_PLAN);
         }
 
-        vcxPlan.setActive(Boolean.FALSE);
-
-        planRepository.updatePlan(vcxPlan);
-
+        planRepository.deletePlan(vcxPlan);
     }
 
     @Transactional

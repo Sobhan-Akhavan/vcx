@@ -99,6 +99,15 @@ public class PlanRepository {
 
     }
 
+    public int deletePlan(VCXPlan vcxPlan) {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("DELETE FROM VCXPlan VP " +
+                        "WHERE VP =: plan", Integer.class)
+                .setParameter("plan", vcxPlan)
+                .executeUpdate();
+    }
+
     public Optional<VCXPlan> getPlan(String hash) {
 
         Session currentSession = sessionFactory.getCurrentSession();
@@ -116,8 +125,6 @@ public class PlanRepository {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
-        currentSession.merge(vcxPlan);
-
-        return vcxPlan;
+        return (VCXPlan) currentSession.merge(vcxPlan);
     }
 }
