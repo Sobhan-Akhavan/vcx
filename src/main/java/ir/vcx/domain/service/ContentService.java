@@ -1,7 +1,10 @@
 package ir.vcx.domain.service;
 
 import ir.vcx.api.model.Paging;
-import ir.vcx.data.entity.*;
+import ir.vcx.data.entity.GenreType;
+import ir.vcx.data.entity.VCXContent;
+import ir.vcx.data.entity.VCXFolder;
+import ir.vcx.data.entity.VideoType;
 import ir.vcx.data.repository.ContentRepository;
 import ir.vcx.data.repository.FolderRepository;
 import ir.vcx.domain.model.space.EntityDetail;
@@ -71,16 +74,16 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent getAvailableContent(String hash, boolean needGenreType, boolean needPoster, boolean needParentFolder) throws VCXException {
+    public VCXContent getAvailableContent(String hash, boolean needGenreType, boolean needParentFolder) throws VCXException {
 
-        return contentRepository.getAvailableContent(hash, needGenreType, needPoster, needParentFolder)
+        return contentRepository.getAvailableContent(hash, needGenreType, needParentFolder)
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.CONTENT_NOT_FOUND));
     }
 
     @Transactional
     public VCXContent updateContent(String hash, String name, String description, Set<GenreType> genreTypes) throws VCXException {
 
-        VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+        VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE);
 
         if (StringUtils.isNotBlank(name) && !Objects.equals(vcxContent.getName(), name)) {
             EntityDetail fileEntity = podSpaceUtil.renameEntity(vcxContent.getHash(), name).getResult();
@@ -127,8 +130,8 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXPoster addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
-        VCXContent content = getAvailableContent(hash, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE);
+    public VCXContent addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
+        VCXContent content = getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE);
 
         EntityDetail imageInfo = podSpaceUtil.getEntityDetail(hash)
                 .getResult();
@@ -136,21 +139,29 @@ public class ContentService {
         checkEntityOwnerValidation(imageInfo);
         checkImageTypeValidation(imageInfo);
 
-        Set<VCXPoster> posters = content.getPosters();
+        String horizontalPoster = content.getHorizontalPoster();
+        String verticalPoster = content.getVerticalPoster();
 
-        if (posters.stream().anyMatch(vcxPoster -> vcxPoster.getPosterHash().equals(posterHash))) {
+        if (posterHash.equals(horizontalPoster) || posterHash.equals(verticalPoster)) {
             throw new VCXException(VCXExceptionStatus.POSTER_HASH_EXIST);
         }
 
-        VCXPoster vcxPoster = contentRepository.addPoster(posterHash, horizontal);
+        String posterToWipe = horizontal ? horizontalPoster : verticalPoster;
+        if (StringUtils.isNotBlank(posterToWipe)) {
+            podSpaceUtil.wipeEntity(posterToWipe);
+        }
 
-        posters.add(vcxPoster);
+        if (horizontal) {
+            content.setHorizontalPoster(imageInfo.getHash());
+        } else {
+            content.setVerticalPoster(imageInfo.getHash());
+        }
 
         podSpaceUtil.publicShareEntity(posterHash);
 
         contentRepository.updateContent(content);
 
-        return vcxPoster;
+        return content;
     }
 
     private void checkEntityOwnerValidation(EntityDetail entity) throws VCXException {
@@ -172,13 +183,13 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent deleteContent(String hash) throws VCXException {
-        VCXContent vcxContent = getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+    public void deleteContent(String hash) throws VCXException {
+        VCXContent vcxContent = getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE);
 
         podSpaceUtil.wipeEntity(vcxContent.getHash());
 
         vcxContent.setActive(Boolean.FALSE);
 
-        return contentRepository.updateContent(vcxContent);
+        contentRepository.updateContent(vcxContent);
     }
 }

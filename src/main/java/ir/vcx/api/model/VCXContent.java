@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -18,7 +17,8 @@ public class VCXContent {
 
     private String name;
     private String hash;
-    private Set<VCXPoster> posters = new HashSet<>();
+    private String verticalPoster;
+    private String horizontalPoster;
     private VCXFolder parentFolder;
     private String description;
     private VideoType videoType;

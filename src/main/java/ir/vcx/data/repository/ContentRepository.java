@@ -1,7 +1,10 @@
 package ir.vcx.data.repository;
 
 import ir.vcx.api.model.Paging;
-import ir.vcx.data.entity.*;
+import ir.vcx.data.entity.GenreType;
+import ir.vcx.data.entity.VCXContent;
+import ir.vcx.data.entity.VCXFolder;
+import ir.vcx.data.entity.VideoType;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -46,7 +49,7 @@ public class ContentRepository {
         return vcxContent;
     }
 
-    public Optional<VCXContent> getAvailableContent(String hash, boolean needGenreType, boolean needPoster, boolean needParentFolder) {
+    public Optional<VCXContent> getAvailableContent(String hash, boolean needGenreType, boolean needParentFolder) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
@@ -54,10 +57,6 @@ public class ContentRepository {
 
         if (needGenreType) {
             stringQuery.append("LEFT JOIN FETCH VC.genresType VCG ");
-        }
-
-        if (needPoster) {
-            stringQuery.append("LEFT JOIN FETCH VC.posters VCP ");
         }
 
         if (needParentFolder) {
@@ -88,13 +87,7 @@ public class ContentRepository {
 
         StringBuilder stringQuery = new StringBuilder("SELECT VC FROM VCXContent VC ");
 
-        if (includePosterLessContent) {
-            stringQuery.append("LEFT JOIN FETCH VC.genresType VCG ");
-            stringQuery.append("LEFT JOIN FETCH VC.posters VCP ");
-        } else {
-            stringQuery.append("INNER JOIN FETCH VC.genresType VCG ");
-            stringQuery.append("INNER JOIN FETCH VC.posters VCP ");
-        }
+        stringQuery.append("LEFT JOIN FETCH VC.genresType VCG ");
 
         boolean isWhereClauseAdded = false;
         if (StringUtils.isNotBlank(name)) {
@@ -110,6 +103,13 @@ public class ContentRepository {
         if (genreTypes != null && !genreTypes.isEmpty()) {
             stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
             stringQuery.append("VCG IN :genreTypes ");
+        }
+
+        if (!includePosterLessContent) {
+            stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
+            stringQuery.append("VC.horizontalPoster IS NOT NULL ");
+            stringQuery.append("OR ");
+            stringQuery.append("VC.verticalPoster IS NOT NULL ");
         }
 
         stringQuery.append("ORDER BY VC.").append(paging.getOrder().getValue()).append(" ")
@@ -139,14 +139,9 @@ public class ContentRepository {
     public Long getContentsCount(String name, VideoType videoType, Set<GenreType> genreTypes, boolean includePosterLessContent) {
         Session currentSession = sessionFactory.getCurrentSession();
 
-
         StringBuilder stringQuery = new StringBuilder("SELECT COUNT(VC) FROM VCXContent VC ");
 
-        if (includePosterLessContent) {
-            stringQuery.append("LEFT JOIN VC.genresType VCG ");
-        } else {
-            stringQuery.append("INNER JOIN VC.genresType VCG ");
-        }
+        stringQuery.append("LEFT JOIN VC.genresType VCG ");
 
         boolean isWhereClauseAdded = false;
         if (StringUtils.isNotBlank(name)) {
@@ -164,6 +159,13 @@ public class ContentRepository {
             stringQuery.append("VCG IN :genreTypes ");
         }
 
+        if (!includePosterLessContent) {
+            stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
+            stringQuery.append("VC.horizontalPoster IS NOT NULL ");
+            stringQuery.append("OR ");
+            stringQuery.append("VC.verticalPoster IS NOT NULL");
+        }
+
         Query<Long> query = currentSession.createQuery(stringQuery.toString(), Long.class);
 
         if (StringUtils.isNotBlank(name)) {
@@ -179,18 +181,5 @@ public class ContentRepository {
         }
 
         return query.getSingleResult();
-    }
-
-    public VCXPoster addPoster(String posterHash, boolean horizontal) {
-
-        Session currentSession = sessionFactory.getCurrentSession();
-
-        VCXPoster vcxPoster = new VCXPoster();
-        vcxPoster.setPosterHash(posterHash);
-        vcxPoster.setHorizontal(horizontal);
-
-        currentSession.persist(vcxPoster);
-
-        return vcxPoster;
     }
 }

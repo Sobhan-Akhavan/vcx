@@ -9,7 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -34,9 +33,11 @@ public class VCXContent {
     @Column(name = "HASH", unique = true, nullable = false)
     private String hash;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @Column(nullable = false)
-    private Set<VCXPoster> posters = new HashSet<>();
+    @Column(name = "VERTICAL_POSTER")
+    private String verticalPoster;
+
+    @Column(name = "HORIZONTAL_POSTER")
+    private String horizontalPoster;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private VCXFolder parentFolder;

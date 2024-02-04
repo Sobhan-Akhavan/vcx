@@ -68,7 +68,7 @@ public class LinkService {
         Optional.ofNullable(userUtil.getCredential().getUser())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
 
-        VCXContent content = contentService.getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        VCXContent content = contentService.getAvailableContent(hash, Boolean.FALSE, Boolean.TRUE);
 
         return getVcxUploadLink(content.getParentFolder());
     }
@@ -100,7 +100,7 @@ public class LinkService {
             throw new VCXException(VCXExceptionStatus.SUBSCRIPTION_PLAN_NOT_FOUND);
         }
 
-        VCXContent vcxContent = contentService.getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+        VCXContent vcxContent = contentService.getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE);
 
         return linkRepository.getDownloadLink(vcxContent)
                 .orElseGet(() -> {
