@@ -50,16 +50,22 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent createContent(String file_url, String description, VideoType videoType,
+    public VCXContent createContent(String file_url, String description, String contentName, VideoType videoType,
                                     Set<GenreType> genreTypes) throws VCXException {
 
         EntityDetail fileInfo = podSpaceUtil.uploaded_file_info(file_url)
                 .getResult();
 
+        checkEntityOwnerValidation(fileInfo);
+        checkVideoTypeValidation(fileInfo);
+
+        if (StringUtils.isNotBlank(contentName) && !Objects.equals(fileInfo.getName(), contentName)) {
+            fileInfo = podSpaceUtil.renameEntity(fileInfo.getHash(), contentName)
+                    .getResult();
+        }
+
         VCXFolder vcxFolder = folderRepository.getFolder(fileInfo.getParentHash())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.NOT_FOUND));
-
-        checkFileOwnerValidation(fileInfo.getHash());
 
         return contentRepository.addContent(fileInfo.getName(), fileInfo.getHash(), vcxFolder, description, videoType, genreTypes);
     }
@@ -77,7 +83,8 @@ public class ContentService {
         VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
 
         if (StringUtils.isNotBlank(name) && !Objects.equals(vcxContent.getName(), name)) {
-            vcxContent.setName(name);
+            EntityDetail fileEntity = podSpaceUtil.renameEntity(vcxContent.getHash(), name).getResult();
+            vcxContent.setName(fileEntity.getName());
         }
 
         if (StringUtils.isNotBlank(description) && !Objects.equals(vcxContent.getDescription(), description)) {
@@ -123,7 +130,11 @@ public class ContentService {
     public VCXPoster addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
         VCXContent content = getAvailableContent(hash, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE);
 
-        checkFileOwnerValidation(posterHash);
+        EntityDetail imageInfo = podSpaceUtil.getEntityDetail(hash)
+                .getResult();
+
+        checkEntityOwnerValidation(imageInfo);
+        checkImageTypeValidation(imageInfo);
 
         Set<VCXPoster> posters = content.getPosters();
 
@@ -142,12 +153,21 @@ public class ContentService {
         return vcxPoster;
     }
 
-    private void checkFileOwnerValidation(String hash) throws VCXException {
-        EntityDetail entityDetail = podSpaceUtil.getEntityDetail(hash)
-                .getResult();
-
-        if (entityDetail.getOwner().getSsoId() != VCX_SSO_ID) {
+    private void checkEntityOwnerValidation(EntityDetail entity) throws VCXException {
+        if (entity.getOwner().getSsoId() != VCX_SSO_ID) {
             throw new VCXException(VCXExceptionStatus.INVALID_ENTITY_OWNER);
+        }
+    }
+
+    private void checkVideoTypeValidation(EntityDetail videoInfo) throws VCXException {
+        if (!videoInfo.getType().equalsIgnoreCase("video/mp4")) {
+            throw new VCXException(VCXExceptionStatus.INVALID_VIDEO_TYPE);
+        }
+    }
+
+    private void checkImageTypeValidation(EntityDetail imageInfo) throws VCXException {
+        if (!imageInfo.getType().equalsIgnoreCase("image/jpeg")) {
+            throw new VCXException(VCXExceptionStatus.INVALID_IMAGE_TYPE);
         }
     }
 

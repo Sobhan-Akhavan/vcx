@@ -72,6 +72,9 @@ public class ContentController {
             @RequestParam(name = "file_url")
             @Parameter(description = "url of file which is uploaded completely", required = true)
             String file_url,
+            @RequestParam(name = "name", required = false)
+            @Parameter(description = "content name")
+            String name,
             @RequestParam(name = "description")
             @Parameter(description = "description of video", required = true)
             String description,
@@ -83,7 +86,7 @@ public class ContentController {
             Set<GenreType> genreTypes
     ) throws VCXException {
 
-        VCXContent vcxContent = contentService.createContent(file_url, description, videoType, genreTypes);
+        VCXContent vcxContent = contentService.createContent(file_url, name, description, videoType, genreTypes);
 
         ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
 

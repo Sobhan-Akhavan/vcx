@@ -10,6 +10,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum VCXExceptionStatus {
     INVALID_REQUEST(400, "Invalid request", "درخواست معتبر نمی‌باشد"),
+    INVALID_VIDEO_TYPE(400, "Invalid video type", "محتوای ارسال شده برای ویدئو مورد پذیرش نمی‌باشد"),
+    INVALID_IMAGE_TYPE(400, "Invalid image type", "محتوای ارسال شده برای پوستر مورد پذیرش نمی‌باشد"),
     INVALID_PARAMETER(400, "Invalid parameter", "پارامتر‌های ورودی معتبر نمی‌باشد"),
     INVALID_NULL_PARAMETERS(400, "Invalid null parameters", "همه‌ی پارامتر‌های ورودی نمی‌تواند خالی ‌باشد"),
     POSTER_HASH_EXIST(400, "Poster hash exist", "شناسه پوستر تکراری می‌باشد"),

@@ -231,4 +231,32 @@ public class PodSpaceUtil {
         }
         return result;
     }
+
+    public SpaceResponse<EntityDetail> renameEntity(String hash, String contentName) throws VCXException {
+        SpaceResponse<EntityDetail> result;
+        try {
+            result = webClient.put()
+                    .uri(uriBuilder -> uriBuilder
+                            .scheme(PODSPACE_SCHEME)
+                            .host(PODSPACE_HOST)
+                            .port(PODSPACE_PORT)
+                            .path("/api/files/{fileHash}/rename")
+                            .queryParam("newName", contentName)
+                            .queryParam("uniqueName", Boolean.TRUE)
+                            .build(hash))
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<SpaceResponse<EntityDetail>>() {
+                    })
+                    .block();
+        } catch (WebClientResponseException e) {
+            result = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<SpaceResponse<EntityDetail>>() {
+            });
+            throw new VCXException(result.getStatus(), result.getError(), result.getMessage());
+        } catch (Exception e) {
+            log.error("Unknown error while rename entity", e);
+            throw new VCXException(VCXExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
+        }
+        return result;
+    }
 }
