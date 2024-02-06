@@ -72,7 +72,10 @@ public class ReportController {
             String identity,
             @RequestParam(value = "identityType")
             @Parameter(description = "identity type", required = true)
-            IdentityType identityType
+            IdentityType identityType,
+            @RequestParam(value = "addUser", required = false)
+            @Parameter(description = "if user hasn't login yet, user will be added")
+            boolean addUser
     ) throws VCXException {
 
         VCXUser vcxAdminUser = Optional.ofNullable(userUtil.getCredential().getUser())
@@ -83,7 +86,12 @@ public class ReportController {
             throw new VCXException(VCXExceptionStatus.USER_NOT_FOUND);
         }
 
-        VCXUser vcxUser = userService.getUser(clientModifiableUser);
+        VCXUser vcxUser;
+        if (addUser) {
+            vcxUser = userService.getOrCreatePodUser(clientModifiableUser);
+        } else {
+            vcxUser = userService.getUser(clientModifiableUser);
+        }
 
         Optional<ir.vcx.data.entity.VCXUserLimit> userPlan = userLimitService.getUserLimit(vcxUser);
 

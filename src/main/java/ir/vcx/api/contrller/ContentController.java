@@ -205,8 +205,8 @@ public class ContentController {
     }
 
     @Operation(
-            summary = "get contents",
-            description = "get list of contents"
+            summary = "search on contents",
+            description = "search on contents"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful Operation",
@@ -220,7 +220,7 @@ public class ContentController {
                             schema = @Schema(implementation = RestResponse.class))}),
     })
     @GetMapping
-    public ResponseEntity<?> getContents(
+    public ResponseEntity<?> searchOnContents(
             @RequestParam(name = "name", required = false)
             @Parameter(description = "name of videos (must be 3 character minimum)")
             String name,
