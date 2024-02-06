@@ -9,12 +9,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import ir.vcx.api.model.ApiPageList;
-import ir.vcx.api.model.IdentityType;
-import ir.vcx.api.model.RestResponse;
+import ir.vcx.api.model.*;
 import ir.vcx.data.entity.VCXUser;
 import ir.vcx.data.entity.VCXUserLimit;
 import ir.vcx.data.mapper.UserLimitMapper;
+import ir.vcx.data.mapper.UserMapper;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.UserLimitService;
 import ir.vcx.domain.service.UserService;
@@ -22,13 +21,16 @@ import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
 import ir.vcx.util.KeyleadConfiguration;
 import ir.vcx.util.UserUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Tag(name = "Report Controller")
 @CrossOrigin("*")
@@ -48,6 +50,61 @@ public class ReportController {
         this.userLimitService = userLimitService;
         this.keyleadConfiguration = keyleadConfiguration;
         this.userUtil = userUtil;
+    }
+
+    @Operation(
+            summary = "search on users",
+            description = "search on users"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Long.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @GetMapping("/users")
+    public ResponseEntity<?> searchOnUsers(
+            @RequestParam(value = "identity", required = false)
+            @Parameter(description = "user identity")
+            String identity,
+            @RequestParam(value = "identityType", required = false)
+            @Parameter(description = "identity type", schema = @Schema(allowableValues = {"USERNAME", "SSO_ID"}))
+            IdentityType identityType,
+            @RequestParam(value = "start", defaultValue = "0")
+            @Parameter(description = "offset of pagination", schema = @Schema(defaultValue = "0", minimum = "0"), required = true)
+            int start,
+            @RequestParam(value = "size", defaultValue = "20")
+            @Parameter(description = "size of pagination", schema = @Schema(defaultValue = "20", minimum = "1"), required = true)
+            int size,
+            @RequestParam(name = "order", defaultValue = "CREATED")
+            @Parameter(description = "sort result by", schema = @Schema(defaultValue = "UPDATED", allowableValues = {"CREATED", "UPDATED", "USERNAME", "NAME", "SSO_ID"}), required = true)
+            Order order,
+            @RequestParam(name = "desc", defaultValue = "FALSE")
+            @Parameter(description = "sort returned items ascending or descending", schema = @Schema(defaultValue = "FALSE", allowableValues = {"FALSE", "TRUE"}), required = true)
+            boolean desc
+    ) throws VCXException {
+
+
+        Paging paging = new Paging(start, size, order, desc);
+
+        Pair<List<VCXUser>, Long> users = userService.searchOnUsers(identity, identityType, paging);
+
+        List<ir.vcx.api.model.VCXUser> vcxUserList = users.getKey()
+                .stream()
+                .map(UserMapper.INSTANCE::entityToApi)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .result(new ApiPageList<>(vcxUserList, users.getValue()))
+                .status(HttpStatus.OK)
+                .build()
+        );
+
     }
 
     @Operation(

@@ -24,6 +24,8 @@ public enum VCXExceptionStatus {
     INVALID_DELETE_PLAN(400, "Invalid delete plan - plan/plans are in-used", "طرح‌/طرح‌های اشتراک در حال استفاده می‌باشد"),
     INVALID_NAME_VALUE_LENGTH(400, "Invalid name value length", "نام وارد شده حدااقل می‌بایست دارای ۳ حرف باشد"),
     INVALID_PAGINATION_ORDER(400, "Invalid pagination order", "نوع مرتب کننده لیست، قابل قبول نمی‌باشد"),
+    INVALID_IDENTITY_TYPE(400, "Invalid identity type", "نوع مشخص کننده شناسه کاربر، قابل قبول نمی‌باشد"),
+    INVALID_IDENTITY(400, "Invalid identity", "شناسه کاربر به درستی وارد نشده است"),
     INVALID_AUTHENTICATION_INFORMATION(400, "Invalid authentication information.", "اطلاعات کاربر معتبر نمی‌باشد"),
     UNAUTHORIZED(401, "Unauthorized", "درخواست دسترسی معتبر نیست"),
     INVALID_AUTHORIZATION_TYPE(401, "Invalid authorization type", "احراز هویت باید از نوع Bearer باشد"),

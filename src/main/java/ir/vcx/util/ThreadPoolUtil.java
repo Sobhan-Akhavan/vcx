@@ -19,4 +19,9 @@ public class ThreadPoolUtil {
         return (ThreadPoolExecutor) Executors.newFixedThreadPool(6);
     }
 
+    @Bean(value = "adminThreadPool")
+    public ThreadPoolExecutor threadPoolFactory3() {
+        return (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+    }
+
 }

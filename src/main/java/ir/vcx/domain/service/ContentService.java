@@ -1,5 +1,6 @@
 package ir.vcx.domain.service;
 
+import ir.vcx.api.model.Order;
 import ir.vcx.api.model.Paging;
 import ir.vcx.data.entity.GenreType;
 import ir.vcx.data.entity.VCXContent;
@@ -10,6 +11,7 @@ import ir.vcx.data.repository.FolderRepository;
 import ir.vcx.domain.model.space.EntityDetail;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
+import ir.vcx.util.LimitUtil;
 import ir.vcx.util.request.PodSpaceUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -106,9 +109,9 @@ public class ContentService {
     public Pair<List<VCXContent>, Long> getContents(String name, VideoType videoType, Set<GenreType> genreTypes,
                                                     boolean includePosterLessContent, Paging paging) throws VCXException {
 
-        if (StringUtils.isNotBlank(name) && name.length() < 3) {
-            throw new VCXException(VCXExceptionStatus.INVALID_NAME_VALUE_LENGTH);
-        }
+
+        LimitUtil.validateInput(Arrays.asList(Order.CREATED, Order.UPDATED), paging.getOrder());
+
 
         Future<List<VCXContent>> getContentsThread = threadPoolExecutor.submit(() ->
                 contentRepository.getContents(name, videoType, genreTypes, includePosterLessContent, paging));

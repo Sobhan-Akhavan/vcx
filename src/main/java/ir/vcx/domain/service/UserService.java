@@ -2,17 +2,29 @@ package ir.vcx.domain.service;
 
 import com.fanapium.keylead.client.users.ClientModifiableUser;
 import com.fanapium.keylead.common.KeyleadUserVo;
+import ir.vcx.api.model.IdentityType;
+import ir.vcx.api.model.Order;
+import ir.vcx.api.model.Paging;
 import ir.vcx.data.entity.VCXUser;
 import ir.vcx.data.repository.UserRepository;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
+import ir.vcx.util.LimitUtil;
 import ir.vcx.util.UserUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Created by Sobhan on 11/16/2023 - VCX
@@ -24,12 +36,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserUtil userUtil;
+    private final ThreadPoolExecutor threadPoolExecutor;
 
 
     @Autowired
-    public UserService(UserRepository userRepository, UserUtil userUtil) {
+    public UserService(UserRepository userRepository, UserUtil userUtil, @Qualifier("adminThreadPool") ThreadPoolExecutor threadPoolExecutor) {
         this.userRepository = userRepository;
         this.userUtil = userUtil;
+        this.threadPoolExecutor = threadPoolExecutor;
     }
 
 
@@ -94,5 +108,42 @@ public class UserService {
     public VCXUser getUser(ClientModifiableUser clientModifiableUser) throws VCXException {
         return userRepository.getUserBySsoId(clientModifiableUser.getUserId())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.USER_NOT_FOUND));
+    }
+
+
+    public Pair<List<VCXUser>, Long> searchOnUsers(String identity, IdentityType identityType, Paging paging) throws VCXException {
+
+        VCXUser vcxAdminUser = Optional.ofNullable(userUtil.getCredential().getUser())
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.UNAUTHORIZED));
+
+        LimitUtil.validateInput(Arrays.asList(IdentityType.SSO_ID, IdentityType.USERNAME), identityType);
+
+        LimitUtil.validateInput(Arrays.asList(Order.CREATED, Order.UPDATED, Order.USERNAME, Order.NAME, Order.SSO_ID), paging.getOrder());
+
+        if (StringUtils.isNotBlank(identity) && identityType == null) {
+            throw new VCXException(VCXExceptionStatus.INVALID_IDENTITY_TYPE);
+        }
+
+        if (StringUtils.isBlank(identity) && identityType != null) {
+            throw new VCXException(VCXExceptionStatus.INVALID_IDENTITY);
+        }
+
+        Future<List<VCXUser>> searchOnUserThread = threadPoolExecutor.submit(() ->
+                userRepository.searchOnUser(identity, identityType, paging));
+
+        Future<Long> searchOnUserCountThread = threadPoolExecutor.submit(() ->
+                userRepository.searchOnUserCount(identity, identityType));
+
+        try {
+            List<VCXUser> vcxUsers = searchOnUserThread.get();
+            Long vcxUsersCount = searchOnUserCountThread.get();
+
+            return Pair.of(vcxUsers, vcxUsersCount);
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+
+            throw new VCXException(VCXExceptionStatus.UNKNOWN_ERROR);
+        }
+
     }
 }
