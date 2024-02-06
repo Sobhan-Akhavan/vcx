@@ -108,7 +108,7 @@ public class ContentRepository {
         if (!includePosterLessContent) {
             stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
             stringQuery.append("VC.horizontalPoster IS NOT NULL ");
-            stringQuery.append("OR ");
+            stringQuery.append("AND ");
             stringQuery.append("VC.verticalPoster IS NOT NULL ");
         }
 
@@ -162,7 +162,7 @@ public class ContentRepository {
         if (!includePosterLessContent) {
             stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
             stringQuery.append("VC.horizontalPoster IS NOT NULL ");
-            stringQuery.append("OR ");
+            stringQuery.append("AND ");
             stringQuery.append("VC.verticalPoster IS NOT NULL");
         }
 
