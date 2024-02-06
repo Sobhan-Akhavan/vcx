@@ -159,9 +159,7 @@ public class ContentService {
 
         podSpaceUtil.publicShareEntity(posterHash);
 
-        contentRepository.updateContent(content);
-
-        return content;
+        return contentRepository.updateContent(content);
     }
 
     private void checkEntityOwnerValidation(EntityDetail entity) throws VCXException {
