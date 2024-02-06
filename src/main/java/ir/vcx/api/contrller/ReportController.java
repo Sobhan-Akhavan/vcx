@@ -14,6 +14,7 @@ import ir.vcx.api.model.IdentityType;
 import ir.vcx.api.model.RestResponse;
 import ir.vcx.data.entity.VCXUser;
 import ir.vcx.data.entity.VCXUserLimit;
+import ir.vcx.data.mapper.UserLimitMapper;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.UserLimitService;
 import ir.vcx.domain.service.UserService;
@@ -90,7 +91,7 @@ public class ReportController {
         vcxUserLimit.setUser(vcxUser);
 
         return ResponseEntity.ok(RestResponse.Builder()
-                .result(new ApiPageList<>(vcxUserLimit))
+                .result(new ApiPageList<>(UserLimitMapper.INSTANCE.entityToApi(vcxUserLimit)))
                 .status(HttpStatus.OK)
                 .build()
         );
