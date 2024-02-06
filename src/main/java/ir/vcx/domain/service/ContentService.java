@@ -131,7 +131,7 @@ public class ContentService {
 
     @Transactional
     public VCXContent addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
-        VCXContent content = getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE);
+        VCXContent content = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE);
 
         EntityDetail imageInfo = podSpaceUtil.getEntityDetail(posterHash)
                 .getResult();
