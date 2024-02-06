@@ -20,7 +20,7 @@ public class Paging {
     private Order order;
     private boolean desc;
 
-    public static void checkOrder(HashSet<Order> allowableOrders, Order order) throws VCXException {
+    public static void validateOrder(HashSet<Order> allowableOrders, Order order) throws VCXException {
         if (!allowableOrders.contains(order)) {
             throw new VCXException(VCXExceptionStatus.INVALID_PAGINATION_ORDER);
         }

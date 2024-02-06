@@ -4,10 +4,15 @@ import com.fanapium.keylead.client.users.ClientModifiableUser;
 import com.fanapium.keylead.common.KeyleadUserVo;
 import ir.vcx.data.entity.VCXUser;
 import ir.vcx.data.repository.UserRepository;
+import ir.vcx.exception.VCXException;
+import ir.vcx.exception.VCXExceptionStatus;
+import ir.vcx.util.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 /**
  * Created by Sobhan on 11/16/2023 - VCX
@@ -18,27 +23,34 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserUtil userUtil;
+
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserUtil userUtil) {
         this.userRepository = userRepository;
+        this.userUtil = userUtil;
     }
 
 
     @Transactional
     public VCXUser getOrCreatePodUser(ClientModifiableUser userInfo) {
 
-        VCXUser vcxUser = userRepository.getUserBySsoId(userInfo.getUserId());
+        Optional<VCXUser> userBySsoId = userRepository.getUserBySsoId(userInfo.getUserId());
 
         KeyleadUserVo keyleadUserVo = userInfo.getUserInfo();
 
         String userFullName = getUserFullName(keyleadUserVo);
 
-        if (vcxUser == null) {
+        VCXUser vcxUser;
+
+        if (!userBySsoId.isPresent()) {
 
             vcxUser = userRepository.addUser(userInfo.getUserId(), keyleadUserVo.getPreferred_username(), userFullName, keyleadUserVo.getPicture());
 
         } else {
+
+            vcxUser = userBySsoId.get();
 
             boolean modify = false;
 
@@ -76,5 +88,11 @@ public class UserService {
             name = userInfo.getPreferred_username();
         }
         return name;
+    }
+
+    @Transactional
+    public VCXUser getUser(ClientModifiableUser clientModifiableUser) throws VCXException {
+        return userRepository.getUserBySsoId(clientModifiableUser.getUserId())
+                .orElseThrow(() -> new VCXException(VCXExceptionStatus.USER_NOT_FOUND));
     }
 }

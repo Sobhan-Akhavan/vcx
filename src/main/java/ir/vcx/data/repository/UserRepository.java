@@ -6,6 +6,8 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Created by Sobhan on 11/16/2023 - VCX
  */
@@ -21,14 +23,14 @@ public class UserRepository {
         this.sessionFactory = sessionFactory;
     }
 
-    public VCXUser getUserBySsoId(long ssoId) {
+    public Optional<VCXUser> getUserBySsoId(long ssoId) {
 
         Session session = sessionFactory.getCurrentSession();
 
         return session.createQuery("SELECT VU FROM VCXUser VU " +
                         "WHERE VU.ssoId = :id", VCXUser.class)
                 .setParameter("id", ssoId)
-                .uniqueResult();
+                .uniqueResultOptional();
     }
 
     public VCXUser addUser(long ssoId, String preferredUsername, String userFullName, String picture) {

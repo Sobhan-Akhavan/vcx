@@ -53,7 +53,7 @@ public class ContentService {
     }
 
     @Transactional
-    public VCXContent createContent(String file_url, String description, String contentName, VideoType videoType,
+    public VCXContent createContent(String file_url, String contentName, String description, VideoType videoType,
                                     Set<GenreType> genreTypes) throws VCXException {
 
         EntityDetail fileInfo = podSpaceUtil.uploaded_file_info(file_url)

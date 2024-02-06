@@ -9,7 +9,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Order {
     CREATED("created"),
-    UPDATED("updated");
+    UPDATED("updated"),
+    USERNAME("username"),
+    NAME("name"),
+    SSO_ID("ssoId"),
+
+
+    ;
 
 
     private final String value;

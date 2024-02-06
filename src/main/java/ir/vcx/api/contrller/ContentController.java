@@ -248,7 +248,7 @@ public class ContentController {
     ) throws VCXException {
 
 
-        Paging.checkOrder(new HashSet<>(Arrays.asList(Order.CREATED, Order.UPDATED)), order);
+        Paging.validateOrder(new HashSet<>(Arrays.asList(Order.CREATED, Order.UPDATED)), order);
 
         Paging paging = new Paging(start, size, order, desc);
 
