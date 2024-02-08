@@ -2,10 +2,7 @@ package ir.vcx.domain.service;
 
 import ir.vcx.api.model.Order;
 import ir.vcx.api.model.Paging;
-import ir.vcx.data.entity.GenreType;
-import ir.vcx.data.entity.VCXContent;
-import ir.vcx.data.entity.VCXFolder;
-import ir.vcx.data.entity.VideoType;
+import ir.vcx.data.entity.*;
 import ir.vcx.data.repository.ContentRepository;
 import ir.vcx.data.repository.FolderRepository;
 import ir.vcx.domain.model.space.EntityDetail;
@@ -203,5 +200,25 @@ public class ContentService {
     @Async
     public void incrementViewCount(VCXContent vcxContent) {
         contentRepository.incrementViewCountPessimistically(vcxContent);
+    }
+
+    public Pair<List<VCXContentVisit>, Long> mostVisitedVideo(Paging paging) throws VCXException {
+        LimitUtil.validateInput(Arrays.asList(Order.NAME, Order.COUNT), paging.getOrder());
+
+        Future<List<VCXContentVisit>> mostVisitedVideoThread = threadPoolExecutor.submit(() ->
+                contentRepository.mostVisitedVideo(paging));
+
+        Future<Long> mostVisitedVideoCountThread = threadPoolExecutor.submit(contentRepository::mostVisitedVideoCount);
+
+        try {
+            List<VCXContentVisit> contentsVisited = mostVisitedVideoThread.get();
+            Long contentsVisitedCount = mostVisitedVideoCountThread.get();
+
+            return Pair.of(contentsVisited, contentsVisitedCount);
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+
+            throw new VCXException(VCXExceptionStatus.UNKNOWN_ERROR);
+        }
     }
 }

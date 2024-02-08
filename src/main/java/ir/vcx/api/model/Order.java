@@ -13,6 +13,7 @@ public enum Order {
     USERNAME("username"),
     NAME("name"),
     SSO_ID("ssoId"),
+    COUNT("count"),
 
 
     ;

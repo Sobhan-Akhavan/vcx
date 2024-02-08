@@ -10,11 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ir.vcx.api.model.*;
+import ir.vcx.data.entity.VCXContentVisit;
 import ir.vcx.data.entity.VCXUser;
 import ir.vcx.data.entity.VCXUserLimit;
+import ir.vcx.data.mapper.ContentVisitedMapper;
 import ir.vcx.data.mapper.UserLimitMapper;
 import ir.vcx.data.mapper.UserMapper;
 import ir.vcx.domain.model.sso.otp.Handshake;
+import ir.vcx.domain.service.ContentService;
 import ir.vcx.domain.service.UserLimitService;
 import ir.vcx.domain.service.UserService;
 import ir.vcx.exception.VCXException;
@@ -41,13 +44,15 @@ public class ReportController {
 
     private final UserService userService;
     private final UserLimitService userLimitService;
+    private final ContentService contentService;
     private final KeyleadConfiguration keyleadConfiguration;
     private final UserUtil userUtil;
 
     @Autowired
-    public ReportController(UserService userService, UserLimitService userLimitService, KeyleadConfiguration keyleadConfiguration, UserUtil userUtil) {
+    public ReportController(UserService userService, UserLimitService userLimitService, ContentService contentService, KeyleadConfiguration keyleadConfiguration, UserUtil userUtil) {
         this.userService = userService;
         this.userLimitService = userLimitService;
+        this.contentService = contentService;
         this.keyleadConfiguration = keyleadConfiguration;
         this.userUtil = userUtil;
     }
@@ -100,8 +105,8 @@ public class ReportController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(RestResponse.Builder()
-                .result(new ApiPageList<>(vcxUserList, users.getValue()))
                 .status(HttpStatus.OK)
+                .result(new ApiPageList<>(vcxUserList, users.getValue()))
                 .build()
         );
 
@@ -156,8 +161,57 @@ public class ReportController {
         vcxUserLimit.setUser(vcxUser);
 
         return ResponseEntity.ok(RestResponse.Builder()
-                .result(new ApiPageList<>(UserLimitMapper.INSTANCE.entityToApi(vcxUserLimit)))
                 .status(HttpStatus.OK)
+                .result(new ApiPageList<>(UserLimitMapper.INSTANCE.entityToApi(vcxUserLimit)))
+                .build()
+        );
+
+    }
+
+    @Operation(
+            summary = "most visited content",
+            description = "most visited content"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Long.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @GetMapping("/contents/visit")
+    public ResponseEntity<?> mostVisitedContent(
+            @RequestParam(value = "start", defaultValue = "0")
+            @Parameter(description = "offset of pagination", schema = @Schema(defaultValue = "0", minimum = "0"), required = true)
+            int start,
+            @RequestParam(value = "size", defaultValue = "20")
+            @Parameter(description = "size of pagination", schema = @Schema(defaultValue = "20", minimum = "1"), required = true)
+            int size,
+            @RequestParam(name = "order", defaultValue = "COUNT")
+            @Parameter(description = "sort result by", schema = @Schema(defaultValue = "COUNT", allowableValues = {"NAME", "COUNT"}), required = true)
+            Order order,
+            @RequestParam(name = "desc", defaultValue = "TRUE")
+            @Parameter(description = "sort returned items ascending or descending", schema = @Schema(defaultValue = "TRUE", allowableValues = {"FALSE", "TRUE"}), required = true)
+            boolean desc
+    ) throws VCXException {
+
+
+        Paging paging = new Paging(start, size, order, desc);
+
+        Pair<List<VCXContentVisit>, Long> contentVisits = contentService.mostVisitedVideo(paging);
+
+        List<VCXContentVisited> result = contentVisits.getKey()
+                .stream()
+                .map(ContentVisitedMapper.INSTANCE::entityToApi)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .status(HttpStatus.OK)
+                .result(new ApiPageList<>(result, contentVisits.getValue()))
                 .build()
         );
 

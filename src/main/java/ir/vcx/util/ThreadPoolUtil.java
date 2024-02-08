@@ -11,7 +11,7 @@ public class ThreadPoolUtil {
 
     @Bean(value = "contentThreadPool")
     public ThreadPoolExecutor threadPoolFactory1() {
-        return (ThreadPoolExecutor) Executors.newFixedThreadPool(20);
+        return (ThreadPoolExecutor) Executors.newFixedThreadPool(40);
     }
 
     @Bean(value = "planThreadPool")

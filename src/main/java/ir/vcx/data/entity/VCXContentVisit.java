@@ -29,7 +29,7 @@ public class VCXContentVisit {
     @OneToOne(fetch = FetchType.LAZY)
     private VCXContent content;
 
-    @Column(name = "COUNT")
+    @Column(name = "COUNT", nullable = false)
     private long count;
 
     @Version

@@ -1,5 +1,6 @@
 package ir.vcx.data.repository;
 
+import ir.vcx.api.model.Order;
 import ir.vcx.api.model.Paging;
 import ir.vcx.data.entity.*;
 import org.apache.commons.lang3.StringUtils;
@@ -204,5 +205,28 @@ public class ContentRepository {
         newVisit.setCount(1);
 
         currentSession.persist(newVisit);
+    }
+
+    @Transactional
+    public List<VCXContentVisit> mostVisitedVideo(Paging paging) {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        String orderValue = paging.getOrder().getValue();
+        return currentSession.createQuery("SELECT VCV FROM VCXContentVisit VCV " +
+                        "INNER JOIN FETCH VCV.content VCVC " +
+                        "LEFT JOIN FETCH VCVC.genresType VCVCG " +
+                        "ORDER BY " + (paging.getOrder().equals(Order.NAME) ? "VCVC." + orderValue : "VCV." + orderValue) + " " +
+                        ((paging.isDesc()) ? "DESC" : "ASC"), VCXContentVisit.class)
+                .getResultList();
+
+    }
+
+    @Transactional
+    public Long mostVisitedVideoCount() {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT COUNT(VCV) FROM VCXContentVisit VCV", Long.class)
+                .getSingleResult();
+
     }
 }
