@@ -102,7 +102,7 @@ public class LinkService {
 
         VCXContent vcxContent = contentService.getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE);
 
-        return linkRepository.getDownloadLink(vcxContent)
+        VCXDownloadLink vcxDownloadLink = linkRepository.getDownloadLink(vcxContent)
                 .orElseGet(() -> {
                     try {
                         DownloadLink downloadLink = podSpaceUtil.getDownloadLink(hash).getResult();
@@ -113,5 +113,9 @@ public class LinkService {
                     }
 
                 });
+
+        contentService.incrementViewCount(vcxContent);
+
+        return vcxDownloadLink;
     }
 }

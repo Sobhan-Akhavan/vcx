@@ -19,6 +19,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -73,7 +74,11 @@ public class ContentService {
         VCXFolder vcxFolder = folderRepository.getFolder(fileInfo.getParentHash())
                 .orElseThrow(() -> new VCXException(VCXExceptionStatus.NOT_FOUND));
 
-        return contentRepository.addContent(fileInfo.getName(), fileInfo.getHash(), vcxFolder, description, videoType, genreTypes);
+        VCXContent vcxContent = contentRepository.addContent(fileInfo.getName(), fileInfo.getHash(), vcxFolder, description, videoType, genreTypes);
+
+        contentRepository.addFirstVisitedCount(vcxContent);
+
+        return vcxContent;
     }
 
     @Transactional
@@ -192,5 +197,11 @@ public class ContentService {
         vcxContent.setActive(Boolean.FALSE);
 
         contentRepository.updateContent(vcxContent);
+    }
+
+
+    @Async
+    public void incrementViewCount(VCXContent vcxContent) {
+        contentRepository.incrementViewCountPessimistically(vcxContent);
     }
 }

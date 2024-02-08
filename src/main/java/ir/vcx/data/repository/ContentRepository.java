@@ -1,10 +1,7 @@
 package ir.vcx.data.repository;
 
 import ir.vcx.api.model.Paging;
-import ir.vcx.data.entity.GenreType;
-import ir.vcx.data.entity.VCXContent;
-import ir.vcx.data.entity.VCXFolder;
-import ir.vcx.data.entity.VideoType;
+import ir.vcx.data.entity.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -12,6 +9,7 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -181,5 +179,30 @@ public class ContentRepository {
         }
 
         return query.getSingleResult();
+    }
+
+    @Transactional
+    public void incrementViewCountPessimistically(VCXContent vcxContent) {
+
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        VCXContentVisit vcxContentVisit = currentSession.createQuery("SELECT VCV FROM VCXContentVisit VCV " +
+                        "WHERE VCV.content = :content", VCXContentVisit.class)
+                .setParameter("content", vcxContent)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .getSingleResult();
+
+        vcxContentVisit.setCount(vcxContentVisit.getCount() + 1);
+        currentSession.merge(vcxContentVisit);
+    }
+
+    public void addFirstVisitedCount(VCXContent vcxContent) {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        VCXContentVisit newVisit = new VCXContentVisit();
+        newVisit.setContent(vcxContent);
+        newVisit.setCount(1);
+
+        currentSession.persist(newVisit);
     }
 }
