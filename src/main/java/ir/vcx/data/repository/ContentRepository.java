@@ -215,6 +215,7 @@ public class ContentRepository {
         String orderValue = paging.getOrder().getValue();
         return currentSession.createQuery("SELECT VCV FROM VCXContentVisit VCV " +
                         "INNER JOIN FETCH VCV.content VCVC " +
+                        "INNER JOIN FETCH VCVC.genresType VCVCG " +
                         "ORDER BY " + (paging.getOrder().equals(Order.NAME) ? "VCVC." + orderValue : "VCV." + orderValue) + " " +
                         ((paging.isDesc()) ? "DESC" : "ASC"), VCXContentVisit.class)
                 .setFirstResult(paging.getStart())
