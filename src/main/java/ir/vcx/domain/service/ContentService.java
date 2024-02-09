@@ -88,7 +88,7 @@ public class ContentService {
     @Transactional
     public VCXContent updateContent(String hash, String name, String description, Set<GenreType> genreTypes) throws VCXException {
 
-        VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE);
+        VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.FALSE);
 
         if (StringUtils.isNotBlank(name) && !Objects.equals(vcxContent.getName(), name)) {
             EntityDetail fileEntity = podSpaceUtil.renameEntity(vcxContent.getHash(), name).getResult();
@@ -136,7 +136,7 @@ public class ContentService {
 
     @Transactional
     public VCXContent addPoster(String hash, String posterHash, boolean horizontal) throws VCXException {
-        VCXContent content = getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE);
+        VCXContent content = getAvailableContent(hash, Boolean.FALSE, Boolean.FALSE);
 
         EntityDetail imageInfo = podSpaceUtil.getEntityDetail(posterHash)
                 .getResult();
@@ -202,23 +202,31 @@ public class ContentService {
         contentRepository.incrementViewCountPessimistically(vcxContent);
     }
 
-    public Pair<List<VCXContentVisit>, Long> mostVisitedVideo(Paging paging) throws VCXException {
+    public Pair<List<VCXContentVisit>, Long> mostVisitedContent(Paging paging) throws VCXException {
         LimitUtil.validateInput(Arrays.asList(Order.NAME, Order.COUNT), paging.getOrder());
 
-        Future<List<VCXContentVisit>> mostVisitedVideoThread = threadPoolExecutor.submit(() ->
-                contentRepository.mostVisitedVideo(paging));
+        Future<List<VCXContentVisit>> mostVisitedContentThread = threadPoolExecutor.submit(() ->
+                contentRepository.mostVisitedContent(paging));
 
-        Future<Long> mostVisitedVideoCountThread = threadPoolExecutor.submit(contentRepository::mostVisitedVideoCount);
+        Future<Long> mostVisitedContentCountThread = threadPoolExecutor.submit(contentRepository::mostVisitedVideoCount);
 
         try {
-            List<VCXContentVisit> contentsVisited = mostVisitedVideoThread.get();
-            Long contentsVisitedCount = mostVisitedVideoCountThread.get();
+            List<VCXContentVisit> visitedContents = mostVisitedContentThread.get();
+            Long visitedContentsCount = mostVisitedContentCountThread.get();
 
-            return Pair.of(contentsVisited, contentsVisitedCount);
+            return Pair.of(visitedContents, visitedContentsCount);
         } catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();
 
             throw new VCXException(VCXExceptionStatus.UNKNOWN_ERROR);
         }
+    }
+
+    @Transactional
+    public VCXContentVisit visitedContent(String hash) throws VCXException {
+
+        VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.FALSE);
+
+        return contentRepository.getContentVisited(vcxContent);
     }
 }

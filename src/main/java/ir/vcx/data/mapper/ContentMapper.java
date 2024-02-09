@@ -29,7 +29,11 @@ public interface ContentMapper {
     }
     @Named("genresTypeMapper")
     default Set<GenreType> genresTypeMapper(Set<GenreType> genresTypes) {
-        return genresTypes;
+        if (genresTypes == null || !Hibernate.isInitialized(genresTypes)) {
+            return null;
+        } else {
+            return genresTypes;
+        }
     }
 
 }

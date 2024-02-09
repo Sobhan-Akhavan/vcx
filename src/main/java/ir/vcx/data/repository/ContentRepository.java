@@ -208,13 +208,12 @@ public class ContentRepository {
     }
 
     @Transactional
-    public List<VCXContentVisit> mostVisitedVideo(Paging paging) {
+    public List<VCXContentVisit> mostVisitedContent(Paging paging) {
         Session currentSession = sessionFactory.getCurrentSession();
 
         String orderValue = paging.getOrder().getValue();
         return currentSession.createQuery("SELECT VCV FROM VCXContentVisit VCV " +
                         "INNER JOIN FETCH VCV.content VCVC " +
-                        "LEFT JOIN FETCH VCVC.genresType VCVCG " +
                         "ORDER BY " + (paging.getOrder().equals(Order.NAME) ? "VCVC." + orderValue : "VCV." + orderValue) + " " +
                         ((paging.isDesc()) ? "DESC" : "ASC"), VCXContentVisit.class)
                 .getResultList();
@@ -228,5 +227,14 @@ public class ContentRepository {
         return currentSession.createQuery("SELECT COUNT(VCV) FROM VCXContentVisit VCV", Long.class)
                 .getSingleResult();
 
+    }
+
+    public VCXContentVisit getContentVisited(VCXContent vcxContent) {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT VCV FROM VCXContentVisit VCV " +
+                        "WHERE VCV.content = :content", VCXContentVisit.class)
+                .setParameter("content", vcxContent)
+                .getSingleResult();
     }
 }

@@ -116,7 +116,7 @@ public class ContentController {
             String hash
     ) throws VCXException {
 
-        VCXContent vcxContent = contentService.getAvailableContent(hash, Boolean.TRUE, Boolean.TRUE);
+        VCXContent vcxContent = contentService.getAvailableContent(hash, Boolean.TRUE, Boolean.FALSE);
 
         ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
 

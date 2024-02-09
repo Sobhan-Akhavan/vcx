@@ -183,8 +183,8 @@ public class ReportController {
                     content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = RestResponse.class))}),
     })
-    @GetMapping("/contents/visit")
-    public ResponseEntity<?> mostVisitedContent(
+    @GetMapping("/visit/contents")
+    public ResponseEntity<?> mostVisitedContents(
             @RequestParam(value = "start", defaultValue = "0")
             @Parameter(description = "offset of pagination", schema = @Schema(defaultValue = "0", minimum = "0"), required = true)
             int start,
@@ -202,7 +202,7 @@ public class ReportController {
 
         Paging paging = new Paging(start, size, order, desc);
 
-        Pair<List<VCXContentVisit>, Long> contentVisits = contentService.mostVisitedVideo(paging);
+        Pair<List<VCXContentVisit>, Long> contentVisits = contentService.mostVisitedContent(paging);
 
         List<VCXContentVisited> result = contentVisits.getKey()
                 .stream()
@@ -217,4 +217,36 @@ public class ReportController {
 
     }
 
+    @Operation(
+            summary = "visited content",
+            description = "visited content"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Long.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @GetMapping("/visit/contents/{hash}")
+    public ResponseEntity<?> visitedContent(
+            @PathVariable(name = "hash")
+            @Parameter(description = "content hash", required = true)
+            String hash
+    ) throws VCXException {
+
+
+        VCXContentVisit vcxVisitContent = contentService.visitedContent(hash);
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .status(HttpStatus.OK)
+                .result(new ApiPageList<>(ContentVisitedMapper.INSTANCE.entityToApi(vcxVisitContent)))
+                .build()
+        );
+
+    }
 }
