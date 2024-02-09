@@ -217,6 +217,8 @@ public class ContentRepository {
                         "INNER JOIN FETCH VCV.content VCVC " +
                         "ORDER BY " + (paging.getOrder().equals(Order.NAME) ? "VCVC." + orderValue : "VCV." + orderValue) + " " +
                         ((paging.isDesc()) ? "DESC" : "ASC"), VCXContentVisit.class)
+                .setFirstResult(paging.getStart())
+                .setMaxResults(paging.getSize())
                 .getResultList();
 
     }
