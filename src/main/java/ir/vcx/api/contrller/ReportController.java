@@ -16,6 +16,7 @@ import ir.vcx.data.entity.VCXUserLimit;
 import ir.vcx.data.mapper.ContentVisitedMapper;
 import ir.vcx.data.mapper.UserLimitMapper;
 import ir.vcx.data.mapper.UserMapper;
+import ir.vcx.domain.model.ContentsReport;
 import ir.vcx.domain.model.sso.otp.Handshake;
 import ir.vcx.domain.service.ContentService;
 import ir.vcx.domain.service.UserLimitService;
@@ -163,6 +164,34 @@ public class ReportController {
         return ResponseEntity.ok(RestResponse.Builder()
                 .status(HttpStatus.OK)
                 .result(new ApiPageList<>(UserLimitMapper.INSTANCE.entityToApi(vcxUserLimit)))
+                .build()
+        );
+
+    }
+
+    @Operation(
+            summary = "contents report",
+            description = "contents report"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ContentsReport.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @GetMapping("/contents")
+    public ResponseEntity<?> contentsReport() throws VCXException {
+
+        ContentsReport contentVisits = contentService.contentsReport();
+
+        return ResponseEntity.ok(RestResponse.Builder()
+                .status(HttpStatus.OK)
+                .result(new ApiPageList<>(contentVisits))
                 .build()
         );
 

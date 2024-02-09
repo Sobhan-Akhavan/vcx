@@ -3,6 +3,7 @@ package ir.vcx.data.repository;
 import ir.vcx.api.model.Order;
 import ir.vcx.api.model.Paging;
 import ir.vcx.data.entity.*;
+import ir.vcx.domain.model.GenreTypeReport;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -138,7 +139,7 @@ public class ContentRepository {
     public Long getContentsCount(String name, VideoType videoType, Set<GenreType> genreTypes, boolean includePosterLessContent) {
         Session currentSession = sessionFactory.getCurrentSession();
 
-        StringBuilder stringQuery = new StringBuilder("SELECT COUNT(VC) FROM VCXContent VC ");
+        StringBuilder stringQuery = new StringBuilder("SELECT COUNT(DISTINCT VC) FROM VCXContent VC ");
 
         stringQuery.append("LEFT JOIN VC.genresType VCG ");
 
@@ -183,7 +184,7 @@ public class ContentRepository {
     }
 
     @Transactional
-    public void incrementViewCountPessimistically(VCXContent vcxContent) {
+    public void incrementViewCount(VCXContent vcxContent) {
 
         Session currentSession = sessionFactory.getCurrentSession();
 
@@ -237,4 +238,34 @@ public class ContentRepository {
                 .setParameter("content", vcxContent)
                 .getSingleResult();
     }
+
+    @Transactional
+    public Long getContentTypeCount(VideoType videoType) {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT COUNT(VC) FROM VCXContent VC " +
+                        "WHERE VC.videoType = :type", Long.class)
+                .setParameter("type", videoType)
+                .getSingleResult();
+    }
+
+    /**
+     * we can handle all logic with one nativeQuery, but try it to make the query with a hibernated framework.
+     * we can't calculate the percentage of each genreType
+     * because postgresSQL didn't support a nested query like SUM (COUNT(VCG)).
+     * and other so because GROUP BY syntax has a heavy load, we didn't try to calculate SUM (COUNT(VCG)) separate query.
+     *
+     * @return List<GenresTypeReport>
+     */
+    @Transactional
+    public List<GenreTypeReport> getMostGenreTypes() {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT new ir.vcx.domain.model.GenreTypeReport(VCG, COUNT(VCG)) " +
+                        "FROM VCXContent VC " +
+                        "INNER JOIN VC.genresType VCG " +
+                        "GROUP BY VCG", GenreTypeReport.class)
+                .getResultList();
+    }
+
 }

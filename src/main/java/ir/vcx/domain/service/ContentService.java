@@ -5,6 +5,9 @@ import ir.vcx.api.model.Paging;
 import ir.vcx.data.entity.*;
 import ir.vcx.data.repository.ContentRepository;
 import ir.vcx.data.repository.FolderRepository;
+import ir.vcx.domain.model.ContentsReport;
+import ir.vcx.domain.model.GenreTypeReport;
+import ir.vcx.domain.model.VideoTypeReport;
 import ir.vcx.domain.model.space.EntityDetail;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
@@ -108,22 +111,22 @@ public class ContentService {
     }
 
 
-    public Pair<List<VCXContent>, Long> getContents(String name, VideoType videoType, Set<GenreType> genreTypes,
-                                                    boolean includePosterLessContent, Paging paging) throws VCXException {
+    public Pair<List<VCXContent>, Long> searchOnContents(String name, VideoType videoType, Set<GenreType> genreTypes,
+                                                         boolean includePosterLessContent, Paging paging) throws VCXException {
 
 
         LimitUtil.validateInput(Arrays.asList(Order.CREATED, Order.UPDATED), paging.getOrder());
 
 
-        Future<List<VCXContent>> getContentsThread = threadPoolExecutor.submit(() ->
+        Future<List<VCXContent>> getContentThread = threadPoolExecutor.submit(() ->
                 contentRepository.getContents(name, videoType, genreTypes, includePosterLessContent, paging));
 
-        Future<Long> getContentsCountThread = threadPoolExecutor.submit(() ->
+        Future<Long> getContentCountThread = threadPoolExecutor.submit(() ->
                 contentRepository.getContentsCount(name, videoType, genreTypes, includePosterLessContent));
 
         try {
-            List<VCXContent> contents = getContentsThread.get();
-            Long contentsCount = getContentsCountThread.get();
+            List<VCXContent> contents = getContentThread.get();
+            Long contentsCount = getContentCountThread.get();
 
             return Pair.of(contents, contentsCount);
         } catch (InterruptedException | ExecutionException e) {
@@ -199,7 +202,46 @@ public class ContentService {
 
     @Async
     public void incrementViewCount(VCXContent vcxContent) {
-        contentRepository.incrementViewCountPessimistically(vcxContent);
+        contentRepository.incrementViewCount(vcxContent);
+    }
+
+    public ContentsReport contentsReport() throws VCXException {
+
+        Future<List<GenreTypeReport>> mostGenreTypesThread = threadPoolExecutor.submit(() -> {
+            List<GenreTypeReport> mostGenreTypes = contentRepository.getMostGenreTypes();
+
+            long totalCount = mostGenreTypes.stream().mapToLong(GenreTypeReport::getCount).sum();
+
+            mostGenreTypes.forEach(genreTypeReport -> genreTypeReport.setPercent(((float) genreTypeReport.getCount() / totalCount) * 100));
+
+            return mostGenreTypes;
+        });
+
+        Future<Long> movieContentsCountThread = threadPoolExecutor.submit(() ->
+                contentRepository.getContentTypeCount(VideoType.MOVIES));
+
+        Future<Long> seriesContentsCountThread = threadPoolExecutor.submit(() ->
+                contentRepository.getContentTypeCount(VideoType.SERIES));
+
+        Future<Long> contentsCountThread = threadPoolExecutor.submit(() ->
+                contentRepository.getContentsCount(null, null, null, Boolean.TRUE));
+
+        try {
+            List<GenreTypeReport> genreTypeReports = mostGenreTypesThread.get();
+            Long moviesCount = movieContentsCountThread.get();
+            Long seriesCount = seriesContentsCountThread.get();
+            Long contentsCount = contentsCountThread.get();
+
+            VideoTypeReport moviesVideoTypeReport = new VideoTypeReport(VideoType.MOVIES, moviesCount, ((float) moviesCount / contentsCount) * 100);
+            VideoTypeReport seriestVideoTypeReport = new VideoTypeReport(VideoType.SERIES, seriesCount, ((float) seriesCount / contentsCount) * 100);
+
+            return new ContentsReport(Arrays.asList(moviesVideoTypeReport, seriestVideoTypeReport), genreTypeReports, contentsCount);
+
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+
+            throw new VCXException(VCXExceptionStatus.UNKNOWN_ERROR);
+        }
     }
 
     public Pair<List<VCXContentVisit>, Long> mostVisitedContent(Paging paging) throws VCXException {

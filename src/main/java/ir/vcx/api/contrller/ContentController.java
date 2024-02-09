@@ -248,7 +248,7 @@ public class ContentController {
 
         Paging paging = new Paging(start, size, order, desc);
 
-        Pair<List<VCXContent>, Long> contents = contentService.getContents(name, videoType, genreTypes, includePosterLessContent, paging);
+        Pair<List<VCXContent>, Long> contents = contentService.searchOnContents(name, videoType, genreTypes, includePosterLessContent, paging);
 
         List<ir.vcx.api.model.VCXContent> contentList = contents.getKey()
                 .stream()
