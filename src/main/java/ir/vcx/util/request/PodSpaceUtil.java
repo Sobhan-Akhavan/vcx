@@ -259,4 +259,29 @@ public class PodSpaceUtil {
         }
         return result;
     }
+
+    public byte[] downloadFile(String hash) throws VCXException {
+        byte[] result;
+        try {
+            result = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .scheme(PODSPACE_SCHEME)
+                            .host(PODSPACE_HOST)
+                            .port(PODSPACE_PORT)
+                            .path("/api/files/{fileHash}")
+                            .build(hash))
+                    .header("Authorization", "Bearer " + POD_SSO_API_TOKEN)
+                    .retrieve()
+                    .bodyToMono(byte[].class)
+                    .block();
+        } catch (WebClientResponseException e) {
+            SpaceResponse<EntityDetail> spaceResponse = JsonUtil.getObject(e.getResponseBodyAsString(), new TypeReference<SpaceResponse<EntityDetail>>() {
+            });
+            throw new VCXException(spaceResponse.getStatus(), spaceResponse.getError(), spaceResponse.getMessage());
+        } catch (Exception e) {
+            log.error("Unknown error while download entity", e);
+            throw new VCXException(VCXExceptionStatus.PODSPACE_REQUEST_CALL_ERROR);
+        }
+        return result;
+    }
 }

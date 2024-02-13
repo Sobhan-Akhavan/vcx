@@ -26,6 +26,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -80,7 +82,7 @@ public class ContentController {
             @RequestParam(name = "genreType")
             @Parameter(description = "type of genres", required = true)
             Set<GenreType> genreTypes
-    ) throws VCXException {
+    ) throws Exception {
 
         VCXContent vcxContent = contentService.createContent(file_url, name, description, videoType, genreTypes);
 
@@ -300,6 +302,37 @@ public class ContentController {
                 .result(new ApiPageList<>(content))
                 .build()
         );
+    }
+
+    @Operation(
+            summary = "getContentBytes",
+            description = "getContentBytes"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful Operation",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Handshake.class))}),
+            @ApiResponse(responseCode = "400", description = "Invalid Request",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = RestResponse.class))}),
+    })
+    @GetMapping("/{hash}/bytes")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<?> getContentBytes(
+            @PathVariable(name = "hash")
+            @Parameter(description = "hash of video", required = true)
+            String hash,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws Exception {
+
+        byte[] contentsBytes = contentService.getContentsBytes(hash, response);
+
+        return ResponseEntity.ok()
+                .body(contentsBytes);
     }
 
 }

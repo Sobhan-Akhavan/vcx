@@ -22,7 +22,7 @@ import java.util.Optional;
 public class FolderService {
 
     private static final String ROOT_FOLDER_HASH = "ROOT";
-    private static final String VIDEOS_FOLDER_NAME = "VIDEOS";
+    private static final String VIDEOS_FOLDER_NAME = "VIDEOS (1)";
     private static final String MOVIES_FOLDER_NAME = "MOVIES";
     private static final String SERIES_FOLDER_NAME = "SERIES";
 

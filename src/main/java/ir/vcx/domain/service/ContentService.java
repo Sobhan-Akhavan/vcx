@@ -11,6 +11,7 @@ import ir.vcx.domain.model.VideoTypeReport;
 import ir.vcx.domain.model.space.EntityDetail;
 import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
+import ir.vcx.util.EncryptionUtil;
 import ir.vcx.util.LimitUtil;
 import ir.vcx.util.request.PodSpaceUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -56,9 +59,9 @@ public class ContentService {
         this.threadPoolExecutor = threadPoolExecutor;
     }
 
-    @Transactional
+    @Transactional(rollbackOn = Exception.class)
     public VCXContent createContent(String file_url, String contentName, String description, VideoType videoType,
-                                    Set<GenreType> genreTypes) throws VCXException {
+                                    Set<GenreType> genreTypes) throws Exception {
 
         EntityDetail fileInfo = podSpaceUtil.uploaded_file_info(file_url)
                 .getResult();
@@ -77,6 +80,10 @@ public class ContentService {
         VCXContent vcxContent = contentRepository.addContent(fileInfo.getName(), fileInfo.getHash(), vcxFolder, description, videoType, genreTypes);
 
         contentRepository.addFirstVisitedCount(vcxContent);
+
+        byte[] bytes = podSpaceUtil.downloadFile(vcxContent.getHash());
+
+        contentRepository.saveContentByte(EncryptionUtil.encryptData(bytes), vcxContent);
 
         return vcxContent;
     }
@@ -270,5 +277,22 @@ public class ContentService {
         VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.FALSE);
 
         return contentRepository.getContentVisited(vcxContent);
+    }
+
+    @Transactional
+    public byte[] getContentsBytes(String hash, HttpServletResponse response) throws Exception {
+        VCXContent vcxContent = getAvailableContent(hash, Boolean.TRUE, Boolean.FALSE);
+
+        VCXFileEntity contentsBytes = contentRepository.getContentsBytes(vcxContent);
+
+        byte[] data = EncryptionUtil.decryptData(contentsBytes.getData());
+
+        response.setContentType("video/mp4");
+        response.setContentLength(data.length);
+        String contentDisposition = "attachment;" + "filename=\"" + URLEncoder.encode(vcxContent.getName() + ".mp4", "UTF-8").replace('+', ' ') + "\"";
+        response.setHeader("Content-Disposition", contentDisposition);
+
+
+        return data;
     }
 }

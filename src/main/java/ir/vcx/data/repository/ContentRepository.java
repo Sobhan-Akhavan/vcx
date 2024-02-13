@@ -271,4 +271,23 @@ public class ContentRepository {
                 .getResultList();
     }
 
+    public void saveContentByte(byte[] bytes, VCXContent vcxContent) {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        VCXFileEntity vcxFileEntity = new VCXFileEntity();
+        vcxFileEntity.setData(bytes);
+        vcxFileEntity.setSize(bytes.length);
+        vcxFileEntity.setVcxContent(vcxContent);
+
+        currentSession.persist(vcxFileEntity);
+    }
+
+    public VCXFileEntity getContentsBytes(VCXContent vcxContent) {
+        Session currentSession = sessionFactory.getCurrentSession();
+
+        return currentSession.createQuery("SELECT VFE FROM VCXFileEntity VFE " +
+                        "WHERE VFE.vcxContent = :content", VCXFileEntity.class)
+                .setParameter("content", vcxContent)
+                .getSingleResult();
+    }
 }
