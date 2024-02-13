@@ -98,11 +98,13 @@ public class ContentRepository {
         if (videoType != null) {
             stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
             stringQuery.append("VC.videoType = :videoType ");
+            isWhereClauseAdded = true;
         }
 
         if (genreTypes != null && !genreTypes.isEmpty()) {
             stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
             stringQuery.append("VCG IN :genreTypes ");
+            isWhereClauseAdded = true;
         }
 
         if (!includePosterLessContent) {
@@ -152,11 +154,13 @@ public class ContentRepository {
         if (videoType != null) {
             stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
             stringQuery.append("VC.videoType = :videoType ");
+            isWhereClauseAdded = true;
         }
 
         if (genreTypes != null && !genreTypes.isEmpty()) {
             stringQuery.append(isWhereClauseAdded ? "AND " : "WHERE ");
             stringQuery.append("VCG IN :genreTypes ");
+            isWhereClauseAdded = true;
         }
 
         if (!includePosterLessContent) {
