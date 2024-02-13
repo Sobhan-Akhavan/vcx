@@ -8,6 +8,7 @@ import ir.vcx.exception.VCXException;
 import ir.vcx.exception.VCXExceptionStatus;
 import ir.vcx.util.request.PodSpaceUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -21,8 +22,9 @@ import java.util.Optional;
 @Service
 public class FolderService {
 
+    @Value("${service.podspace.video.folder}")
+    private String VIDEOS_FOLDER_NAME;
     private static final String ROOT_FOLDER_HASH = "ROOT";
-    private static final String VIDEOS_FOLDER_NAME = "VIDEOS (1)";
     private static final String MOVIES_FOLDER_NAME = "MOVIES";
     private static final String SERIES_FOLDER_NAME = "SERIES";
 
