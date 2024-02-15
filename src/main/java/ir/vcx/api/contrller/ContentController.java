@@ -1,5 +1,7 @@
 package ir.vcx.api.contrller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -84,7 +86,19 @@ public class ContentController {
             Set<GenreType> genreTypes
     ) throws Exception {
 
-        VCXContent vcxContent = contentService.createContent(file_url, name, description, videoType, genreTypes);
+        String descriptionValue;
+        try {
+
+            descriptionValue = new ObjectMapper()
+                    .readTree(description)
+                    .get("description")
+                    .asText();
+
+        } catch (Exception e) {
+            descriptionValue = null;
+        }
+
+        VCXContent vcxContent = contentService.createContent(file_url, name, descriptionValue, videoType, genreTypes);
 
         ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
 
@@ -153,15 +167,27 @@ public class ContentController {
             @RequestParam(name = "name", required = false)
             @Parameter(description = "name of video")
             String name,
-            @RequestParam(name = "description", required = false)
+            @RequestBody(required = false)
             @Parameter(description = "description of video")
             String description,
             @RequestParam(name = "genreType", required = false)
             @Parameter(description = "type of genres")
             Set<GenreType> genreTypes
-    ) throws VCXException {
+    ) throws VCXException, JsonProcessingException {
 
-        VCXContent vcxContent = contentService.updateContent(hash, name, description, genreTypes);
+        String descriptionValue;
+        try {
+
+            descriptionValue = new ObjectMapper()
+                    .readTree(description)
+                    .get("description")
+                    .asText();
+
+        } catch (Exception e) {
+            descriptionValue = null;
+        }
+
+        VCXContent vcxContent = contentService.updateContent(hash, name, descriptionValue, genreTypes);
 
         ir.vcx.api.model.VCXContent content = ContentMapper.INSTANCE.entityToApi(vcxContent);
 
