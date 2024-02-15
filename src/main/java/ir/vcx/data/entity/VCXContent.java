@@ -42,7 +42,7 @@ public class VCXContent {
     @ManyToOne(fetch = FetchType.LAZY)
     private VCXFolder parentFolder;
 
-    @Column(name = "DESCRIPTION", nullable = false)
+    @Lob
     private String description;
 
     @Column(name = "VIDEO_TYPE", nullable = false)
